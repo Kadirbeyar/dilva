@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Vazirmatn } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -40,8 +40,29 @@ export async function generateMetadata({
     title: titles[locale] ?? titles.en,
     description:
       "Dilva connects language learners with native speakers to chat, correct each other's posts, and learn together.",
+    // Lets the site be "installed" — on iPhone: Safari → Share → Add
+    // to Home Screen — so it opens full-screen with its own icon, no
+    // browser chrome, exactly like a real app. No App Store / Xcode
+    // / Apple Developer account needed for this; it's the quickest
+    // way to try Dilva as an app on a single iPhone for testing.
+    manifest: "/manifest.json",
+    icons: {
+      icon: "/icon-192.png",
+      apple: "/apple-touch-icon.png",
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: "Dilva",
+    },
   };
 }
+
+export const viewport: Viewport = {
+  themeColor: "#7c3aed",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export default async function LocaleLayout({
   children,
