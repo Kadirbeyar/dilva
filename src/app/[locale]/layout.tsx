@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing, LOCALE_DIRECTION, type AppLocale } from "@/i18n/routing";
+import SplashScreen from "@/components/layout/SplashScreen";
 import "../globals.css";
 
 // Inter for ltr (en/tr) content, Vazirmatn for rtl (ku, Arabic-script)
@@ -59,7 +60,7 @@ export async function generateMetadata({
 }
 
 export const viewport: Viewport = {
-  themeColor: "#7c3aed",
+  themeColor: "#0c0c13",
   width: "device-width",
   initialScale: 1,
 };
@@ -95,6 +96,7 @@ export default async function LocaleLayout({
       </head>
       <body className={dir === "rtl" ? "font-kurdish" : "font-latin"}>
         <NextIntlClientProvider messages={messages}>
+          <SplashScreen />
           {children}
         </NextIntlClientProvider>
       </body>
