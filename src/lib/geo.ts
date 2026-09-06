@@ -13,63 +13,29 @@ export type NearbyUser = {
 };
 
 /**
- * A group of nearby users bucketed by city, for privacy: the map
- * shows one pin per city (at the average position of that city's
- * members, not any individual's exact coordinates) instead of
- * plotting everyone's precise home location. Clicking the pin
- * reveals the member list (avatars + distance) without exposing
- * per-user coordinates to the client at all.
+ * Deterministically nudges a coordinate by up to ~600m, seeded by
+ * the user's own id so the offset is stable across requests (their
+ * pin doesn't visibly jump every time the map reloads) while still
+ * never exposing their exact real coordinates to other users —
+ * `distanceKm` above is computed from the REAL coordinates in SQL
+ * before this runs, so the displayed distance stays accurate even
+ * though the plotted pin is fuzzed.
  */
-export type NearbyCityCluster = {
-  key: string;
-  city: string;
-  country: string | null;
-  lat: number;
-  lng: number;
-  count: number;
-  members: {
-    id: string;
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    distanceKm: number;
-  }[];
-};
-
-/** Groups flat nearby-user rows into per-city clusters (see NearbyCityCluster). */
-export function clusterByCity(users: NearbyUser[]): NearbyCityCluster[] {
-  const groups = new Map<string, NearbyUser[]>();
-  for (const u of users) {
-    const key = `${u.city ?? "?"}__${u.country ?? "?"}`;
-    const list = groups.get(key);
-    if (list) list.push(u);
-    else groups.set(key, [u]);
+function seededOffset(seed: string): { dLat: number; dLng: number } {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
   }
-
-  const clusters: NearbyCityCluster[] = [];
-  for (const [key, members] of groups) {
-    const avgLat = members.reduce((sum, m) => sum + m.latitude, 0) / members.length;
-    const avgLng = members.reduce((sum, m) => sum + m.longitude, 0) / members.length;
-    clusters.push({
-      key,
-      city: members[0].city || members[0].country || "?",
-      country: members[0].country,
-      lat: avgLat,
-      lng: avgLng,
-      count: members.length,
-      members: members
-        .map((m) => ({
-          id: m.id,
-          username: m.username,
-          displayName: m.displayName,
-          avatarUrl: m.avatarUrl,
-          distanceKm: m.distanceKm,
-        }))
-        .sort((a, b) => a.distanceKm - b.distanceKm),
-    });
-  }
-
-  return clusters.sort((a, b) => a.members[0].distanceKm - b.members[0].distanceKm);
+  // Two independent pseudo-random values in [-1, 1] from one seed.
+  const r1 = (Math.sin(hash) * 10000) % 1;
+  const r2 = (Math.sin(hash * 2.17 + 1) * 10000) % 1;
+  const metersToDeg = 1 / 111_320; // ~ meters per degree latitude
+  const maxMeters = 600;
+  return {
+    dLat: r1 * maxMeters * metersToDeg,
+    dLng: r2 * maxMeters * metersToDeg,
+  };
 }
 
 /**
@@ -80,7 +46,11 @@ export function clusterByCity(users: NearbyUser[]): NearbyCityCluster[] {
  * service required either).
  *
  * Only returns users who have explicitly opted in with
- * isLocationVisible = true.
+ * isLocationVisible = true. Coordinates are fuzzed with a stable
+ * per-user offset before being returned — see seededOffset above —
+ * so nobody's exact home location is ever sent to the client; the
+ * map (HelloTalk-style) clusters/un-clusters these fuzzed pins by
+ * zoom level on the frontend.
  */
 export async function findNearbyUsers(
   userId: string,
@@ -140,5 +110,10 @@ export async function findNearbyUsers(
     LIMIT ${limit};
   `;
 
-  return rows.filter((r: NearbyUser) => r.distanceKm <= radiusKm);
+  return rows
+    .filter((r: NearbyUser) => r.distanceKm <= radiusKm)
+    .map((r: NearbyUser) => {
+      const { dLat, dLng } = seededOffset(r.id);
+      return { ...r, latitude: r.latitude + dLat, longitude: r.longitude + dLng };
+    });
 }
