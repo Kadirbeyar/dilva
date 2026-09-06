@@ -92,7 +92,13 @@ export default function PostCard({
     return () => clearInterval(id);
   }, [isMine, post.createdAt]);
 
-  const canModify = isMine && withinEditWindow && !deleted;
+  // Editing content stays time-limited (see lib/postEditWindow.ts —
+  // e.g. so a post can't be silently rewritten after others already
+  // corrected it). Deleting your own post is NOT time-limited: an
+  // author should always be able to take their own post down,
+  // however long ago they posted it.
+  const canEdit = isMine && withinEditWindow && !deleted;
+  const canDelete = isMine && !deleted;
 
   async function saveEdit() {
     if (!editDraft.trim() || savingEdit) return;
@@ -277,17 +283,19 @@ export default function PostCard({
           {t("correct")} · {correctionsCount}
         </button>
 
-        {canModify && !editing && (
+        {(canEdit || canDelete) && !editing && (
           <div className="ms-auto flex items-center gap-3 text-xs">
-            <button
-              onClick={() => {
-                setEditDraft(content);
-                setEditing(true);
-              }}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              {t("edit")}
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => {
+                  setEditDraft(content);
+                  setEditing(true);
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                {t("edit")}
+              </button>
+            )}
             {confirmingDelete ? (
               <span className="flex items-center gap-1.5">
                 <button

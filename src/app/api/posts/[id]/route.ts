@@ -65,9 +65,13 @@ export async function PATCH(
 }
 
 /**
- * Delete a Moment. Only the original author, and only within the
- * same 5-minute edit window as PATCH above. Comments/likes/corrections
- * on the post cascade-delete at the DB level (see schema.prisma).
+ * Delete a Moment. Only the original author may do this — but unlike
+ * PATCH above, there is NO time limit: an author can always take
+ * their own post down, no matter how long ago they posted it (only
+ * *editing* the content is time-limited, e.g. so a post can't be
+ * silently rewritten after others already corrected it).
+ * Comments/likes/corrections on the post cascade-delete at the DB
+ * level (see schema.prisma).
  */
 export async function DELETE(
   _req: Request,
@@ -77,8 +81,9 @@ export async function DELETE(
     const user = await requireUser();
     const { id } = await params;
 
-    const { error } = await loadOwnedEditablePost(id, user.id);
-    if (error) return errorResponse(error);
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) return NextResponse.json({ error: "not_found" }, { status: 404 });
+    if (post.authorId !== user.id) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
     await prisma.post.delete({ where: { id } });
 
