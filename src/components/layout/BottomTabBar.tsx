@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
+import { useNavBadges } from "@/components/layout/NavBadgeProvider";
 
 type TabUser = { username: string } | null;
 
@@ -48,12 +49,13 @@ const ICONS: Record<string, (active: boolean) => React.ReactNode> = {
 export default function BottomTabBar({ user }: { user: TabUser }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const { unreadMessages } = useNavBadges();
 
   const tabs = [
     { key: "feed", href: "/feed", label: t("feed") },
     { key: "matches", href: "/matches", label: t("matches") },
     { key: "nearby", href: "/nearby", label: t("nearby") },
-    { key: "chat", href: "/chat", label: t("chat") },
+    { key: "chat", href: "/chat", label: t("chat"), badge: unreadMessages },
     {
       key: "profile",
       href: user ? (`/profile/${user.username}` as const) : "/settings",
@@ -84,8 +86,13 @@ export default function BottomTabBar({ user }: { user: TabUser }) {
                   transition={{ type: "spring", stiffness: 400, damping: 32 }}
                 />
               )}
-              <span className={active ? "text-brand-600 dark:text-brand-400" : "text-gray-400 dark:text-gray-500"}>
+              <span className={`relative ${active ? "text-brand-600 dark:text-brand-400" : "text-gray-400 dark:text-gray-500"}`}>
                 {ICONS[tab.key](active)}
+                {"badge" in tab && tab.badge > 0 && (
+                  <span className="absolute -end-1.5 -top-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-none text-white">
+                    {tab.badge > 9 ? "9+" : tab.badge}
+                  </span>
+                )}
               </span>
               <span className={active ? "text-brand-600 dark:text-brand-400" : "text-gray-500 dark:text-gray-400"}>
                 {tab.label}

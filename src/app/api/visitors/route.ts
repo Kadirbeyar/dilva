@@ -63,6 +63,15 @@ export async function GET() {
 
     const count = await prisma.profileVisit.count({ where: { visitedId: user.id } });
 
+    // Opening this page is what "reading" your visitors means, same
+    // as opening a conversation marks its messages read — clears the
+    // "سەردانکەران" nav badge (see /api/nav-badges) without a
+    // separate mark-read action to remember.
+    await prisma.notification.updateMany({
+      where: { userId: user.id, type: "PROFILE_VISIT", isRead: false },
+      data: { isRead: true },
+    });
+
     if (!premium) {
       return NextResponse.json({ premium: false, count, visitors: [] });
     }

@@ -9,6 +9,17 @@ import SignOutButton from "@/components/layout/SignOutButton";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import NotificationBell from "@/components/layout/NotificationBell";
 import StreakBadge from "@/components/layout/StreakBadge";
+import { useNavBadges } from "@/components/layout/NavBadgeProvider";
+
+/** Small red count pill shown on a nav link with unread activity. */
+function NavBadgeDot({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="ms-1.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white">
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
 
 type NavUser = {
   username: string;
@@ -21,13 +32,14 @@ export default function NavBar({ user }: { user: NavUser }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { unreadMessages, unreadVisitors } = useNavBadges();
 
   const links = [
     { href: "/feed", label: t("feed") },
     { href: "/matches", label: t("matches") },
     { href: "/nearby", label: t("nearby") },
-    { href: "/visitors", label: t("visitors") },
-    { href: "/chat", label: t("chat") },
+    { href: "/visitors", label: t("visitors"), badge: unreadVisitors },
+    { href: "/chat", label: t("chat"), badge: unreadMessages },
     { href: "/premium", label: t("premium") },
   ] as const;
 
@@ -59,6 +71,7 @@ export default function NavBar({ user }: { user: NavUser }) {
                 />
               )}
               {link.label}
+              {"badge" in link && <NavBadgeDot count={link.badge} />}
             </Link>
           ))}
         </nav>
@@ -146,6 +159,7 @@ export default function NavBar({ user }: { user: NavUser }) {
                   }`}
                 >
                   {link.label}
+                  {"badge" in link && <NavBadgeDot count={link.badge} />}
                 </Link>
               ))}
               {user && (
