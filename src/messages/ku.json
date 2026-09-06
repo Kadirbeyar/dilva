@@ -113,7 +113,8 @@
     "locationMismatch": "شوینا تە ya راستین {detected}ه، نە {selected}. یان وەلاتێ راست هەلبژێرە، یان دوگمەیا ژێرین بکاربینه.",
     "locationUseDetected": "{country} بکاربینه",
     "locationDenied": "دەسگەهشتنا location هاتە ژنکرن یان سەرنەکەفت. اجباریە تو ڤێ allow بکەی دا بشێی ئەکاونتەکێ دروست بکەی — دووبارە هەول بدە.",
-    "locationRequiredError": "پێدڤیه پشتی location ب اجباری allow بکەی و شوینا تە دگەل وەلاتێ هەلبژارتی یەک بیت"
+    "locationRequiredError": "پێدڤیه پشتی location ب اجباری allow بکەی و شوینا تە دگەل وەلاتێ هەلبژارتی یەک بیت",
+    "countryLockedHint": "وەلات ناهێتە گوهۆرین ژبەر کو پشتی location یا تە یا راستەقینه هاتیه پشتراستکرن لدەمێ دروستکرنا هەژماری."
   },
   "feed": {
     "title": "پۆستان",

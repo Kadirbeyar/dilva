@@ -113,7 +113,8 @@
     "locationMismatch": "Gerçek konumun {selected} değil, {detected}. Doğru ülkeyi seç veya aşağıdaki düğmeyi kullan.",
     "locationUseDetected": "{country} kullan",
     "locationDenied": "Konum erişimi reddedildi veya başarısız oldu. Hesap oluşturmak için izin vermelisin — lütfen tekrar dene.",
-    "locationRequiredError": "Konum erişimine izin vermeli ve bu, seçtiğin ülkeyle eşleşmelidir"
+    "locationRequiredError": "Konum erişimine izin vermeli ve bu, seçtiğin ülkeyle eşleşmelidir",
+    "countryLockedHint": "Ülke değiştirilemez — kayıt olurken gerçek GPS konumunla doğrulandı."
   },
   "feed": {
     "title": "Anlar",

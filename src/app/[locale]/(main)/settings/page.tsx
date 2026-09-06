@@ -254,12 +254,21 @@ export default function SettingsPage() {
           </div>
 
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{t("countryLabel")}</span>
+            <span className="flex items-center gap-1.5 text-sm font-medium text-gray-800 dark:text-gray-200">
+              🔒 {t("countryLabel")}
+            </span>
+            {/* Locked, not editable here: the country was verified against
+                the user's real GPS location at signup (see onboarding's
+                mandatory location check) — letting it be freely changed
+                afterward from Settings would undo that verification
+                entirely. The <select> still submits the existing value
+                (required by /api/profile/complete's schema), it's just
+                not user-editable. */}
             <select
               required
+              disabled
               value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              className="cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-3.5 py-2.5 text-gray-500 outline-none dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-400"
             >
               <option value="" disabled>
                 {t("countryPlaceholder")}
@@ -270,6 +279,7 @@ export default function SettingsPage() {
                 </option>
               ))}
             </select>
+            <span className="text-xs text-gray-500 dark:text-gray-400">{t("countryLockedHint")}</span>
           </label>
 
           <label className="flex flex-col gap-1">

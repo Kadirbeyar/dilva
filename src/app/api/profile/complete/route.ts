@@ -77,6 +77,16 @@ export async function POST(req: Request) {
       );
     }
 
+    // Country is locked after it's first set (see Settings, where the
+    // field is shown disabled): it was verified against the user's
+    // real GPS location at signup, and letting it be silently changed
+    // afterward — whether from the UI or a hand-crafted request to
+    // this same endpoint — would undo that verification. Once
+    // user.country is already set, ignore whatever the request sent
+    // and keep the existing value; only a first-time onboarding
+    // (country still null) actually applies body.country.
+    const country = user.country ?? body.country;
+
     const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const profile = await tx.user.update({
         where: { id: user.id },
@@ -85,7 +95,7 @@ export async function POST(req: Request) {
           displayName: body.displayName,
           bio: body.bio,
           avatarUrl: body.avatarUrl || undefined,
-          country: body.country,
+          country,
           city: body.city,
           birthDate,
           gender: body.gender,

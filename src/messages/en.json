@@ -113,7 +113,8 @@
     "locationMismatch": "Your real location is {detected}, not {selected}. Pick the correct country, or use the button below.",
     "locationUseDetected": "Use {country}",
     "locationDenied": "Location access was denied or failed. You must allow it to create an account — please try again.",
-    "locationRequiredError": "You must allow location access and it must match your selected country"
+    "locationRequiredError": "You must allow location access and it must match your selected country",
+    "countryLockedHint": "Country can't be changed — it was verified against your real GPS location when you signed up."
   },
   "feed": {
     "title": "Moments",
