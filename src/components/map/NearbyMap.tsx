@@ -63,6 +63,46 @@ function FlyTo({ target }: { target: { lat: number; lng: number } | null }) {
   return null;
 }
 
+/**
+ * Leaflet measures its container's size the moment it initializes —
+ * if that happens while the tab is in the background, or before the
+ * surrounding flex layout has settled to its final height, the
+ * browser reports 0 (or a stale) size and Leaflet's internal tile
+ * math gets stuck on it: the result is a map that renders zoomed
+ * WAY out (a whole region instead of one city) even though `zoom`
+ * is set correctly, and it doesn't self-correct just by switching
+ * back to the tab. Re-measuring after mount, on next-tick, on tab
+ * visibility, and on container resize fixes all of those cases.
+ */
+function InvalidateSizeFix() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    const refresh = () => map.invalidateSize();
+
+    const raf = requestAnimationFrame(refresh);
+    const t1 = setTimeout(refresh, 300);
+    const t2 = setTimeout(refresh, 1000);
+
+    const ro = new ResizeObserver(refresh);
+    ro.observe(container);
+
+    function onVisibility() {
+      if (document.visibilityState === "visible") refresh();
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      ro.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [map]);
+  return null;
+}
+
 export default function NearbyMap({
   center,
   clusters,
@@ -91,6 +131,7 @@ export default function NearbyMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <InvalidateSizeFix />
       <Recenter lat={center.lat} lng={center.lng} />
       <FlyTo target={flyTarget} />
       {clusters.map((c) => (
