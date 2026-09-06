@@ -71,7 +71,7 @@ export async function findNearbyUsers(
       "isLocationVisible" = true
       AND "latitude" IS NOT NULL
       AND "longitude" IS NOT NULL
-      AND NOT ("id" = ANY(${excluded}))
+      AND NOT ("id" = ANY(${excluded}::uuid[]))
     ORDER BY "distanceKm" ASC
     LIMIT ${limit};
   `;
