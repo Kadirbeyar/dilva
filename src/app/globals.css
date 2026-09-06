@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --fg: #1f2430;
+  --shadow-soft: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -8px rgba(16, 24, 40, 0.10);
+  --shadow-lift: 0 4px 12px rgba(16, 24, 40, 0.06), 0 24px 48px -16px rgba(16, 24, 40, 0.18);
+}
+
+/* Real dark mode, driven by the "dark" class on <html> (tailwind's
+   darkMode: "class" strategy) — toggled by components/layout/ThemeToggle
+   and initialized (no flash) by the inline script in the root layout.
+   Dark is the default; see that script for how a saved "light"
+   preference overrides it. */
+:root.dark {
+  color-scheme: dark;
+  --bg: #0c0c13;
+  --fg: #eeecf5;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 4px 12px rgba(0, 0, 0, 0.35), 0 24px 48px -16px rgba(0, 0, 0, 0.6);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100dvh;
+  position: relative;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Badini Kurdish (Arabic script) reads noticeably better with more
+   line-height and a slightly larger size than Latin scripts. */
+[dir="rtl"] {
+  line-height: 1.9;
+}
+[dir="rtl"] body {
+  font-size: 1.05rem;
+}
+
+/* A soft, animated gradient mesh used behind hero/marketing sections —
+   fixed + pointer-events:none so it never interferes with layout or
+   scroll; each page opts in by nesting content inside a `relative`
+   wrapper above it. */
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 35% at 12% 8%, rgba(124, 58, 237, 0.14), transparent 60%),
+    radial-gradient(35% 30% at 88% 15%, rgba(255, 122, 89, 0.13), transparent 60%),
+    radial-gradient(45% 40% at 50% 100%, rgba(139, 92, 246, 0.10), transparent 60%);
+}
+:root.dark .bg-mesh {
+  background:
+    radial-gradient(40% 35% at 12% 8%, rgba(139, 92, 246, 0.22), transparent 60%),
+    radial-gradient(35% 30% at 88% 15%, rgba(255, 122, 89, 0.14), transparent 60%),
+    radial-gradient(45% 40% at 50% 100%, rgba(124, 58, 237, 0.18), transparent 60%);
+}
+
+.card-shadow {
+  box-shadow: var(--shadow-soft);
+}
+.card-shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #6d28d9 0%, #8b5cf6 55%, #ff7a59 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+:root.dark .text-gradient {
+  background: linear-gradient(90deg, #a78bfa 0%, #c4b5fd 55%, #ff8a54 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(3deg); }
+}
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+@keyframes float-slower {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(-4deg); }
+}
+.animate-float-slower {
+  animation: float-slower 8s ease-in-out infinite;
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.35);
+}
