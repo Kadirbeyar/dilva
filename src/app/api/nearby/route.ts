@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser, AuthError } from "@/lib/auth";
 import { requirePremium, PremiumRequiredError } from "@/lib/premium";
-import { findNearbyUsers } from "@/lib/geo";
+import { findNearbyUsers, clusterByCity } from "@/lib/geo";
 
 /** Premium-only: list nearby language partners for the map. */
 export async function GET(req: Request) {
@@ -13,13 +13,17 @@ export async function GET(req: Request) {
     const radiusKm = Number(searchParams.get("radiusKm") ?? 50);
 
     const users = await findNearbyUsers(user.id, radiusKm);
+    // Grouped by city rather than sent as individual pins: nobody's
+    // exact home coordinates should be plottable on the map, only
+    // "N learners in <city>" — see lib/geo.ts's clusterByCity.
+    const clusters = clusterByCity(users);
     // Include the viewer's own last-saved coordinates so the client can
     // center the map on page load without needing a fresh geolocation
     // prompt every time (see nearby/page.tsx — previously the map never
     // rendered on a normal page load because `center` was only ever set
     // inside the "share my location" button flow).
     return NextResponse.json({
-      users,
+      clusters,
       center: user.latitude != null && user.longitude != null
         ? { lat: user.latitude, lng: user.longitude }
         : null,

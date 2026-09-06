@@ -7,8 +7,70 @@ export type NearbyUser = {
   avatarUrl: string | null;
   latitude: number;
   longitude: number;
+  city: string | null;
+  country: string | null;
   distanceKm: number;
 };
+
+/**
+ * A group of nearby users bucketed by city, for privacy: the map
+ * shows one pin per city (at the average position of that city's
+ * members, not any individual's exact coordinates) instead of
+ * plotting everyone's precise home location. Clicking the pin
+ * reveals the member list (avatars + distance) without exposing
+ * per-user coordinates to the client at all.
+ */
+export type NearbyCityCluster = {
+  key: string;
+  city: string;
+  country: string | null;
+  lat: number;
+  lng: number;
+  count: number;
+  members: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    distanceKm: number;
+  }[];
+};
+
+/** Groups flat nearby-user rows into per-city clusters (see NearbyCityCluster). */
+export function clusterByCity(users: NearbyUser[]): NearbyCityCluster[] {
+  const groups = new Map<string, NearbyUser[]>();
+  for (const u of users) {
+    const key = `${u.city ?? "?"}__${u.country ?? "?"}`;
+    const list = groups.get(key);
+    if (list) list.push(u);
+    else groups.set(key, [u]);
+  }
+
+  const clusters: NearbyCityCluster[] = [];
+  for (const [key, members] of groups) {
+    const avgLat = members.reduce((sum, m) => sum + m.latitude, 0) / members.length;
+    const avgLng = members.reduce((sum, m) => sum + m.longitude, 0) / members.length;
+    clusters.push({
+      key,
+      city: members[0].city || members[0].country || "?",
+      country: members[0].country,
+      lat: avgLat,
+      lng: avgLng,
+      count: members.length,
+      members: members
+        .map((m) => ({
+          id: m.id,
+          username: m.username,
+          displayName: m.displayName,
+          avatarUrl: m.avatarUrl,
+          distanceKm: m.distanceKm,
+        }))
+        .sort((a, b) => a.distanceKm - b.distanceKm),
+    });
+  }
+
+  return clusters.sort((a, b) => a.members[0].distanceKm - b.members[0].distanceKm);
+}
 
 /**
  * Premium "Nearby" feature. Uses a plain Haversine-distance query —
@@ -57,6 +119,8 @@ export async function findNearbyUsers(
       "avatarUrl",
       "latitude",
       "longitude",
+      "city",
+      "country",
       (
         6371 * acos(
           LEAST(1.0, GREATEST(-1.0,

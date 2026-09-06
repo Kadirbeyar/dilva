@@ -12,14 +12,20 @@ const NearbyMap = dynamic(() => import("@/components/map/NearbyMap"), {
   ssr: false,
 });
 
-type NearbyUser = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-  latitude: number;
-  longitude: number;
-  distanceKm: number;
+type NearbyCityCluster = {
+  key: string;
+  city: string;
+  country: string | null;
+  lat: number;
+  lng: number;
+  count: number;
+  members: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    distanceKm: number;
+  }[];
 };
 
 export default function NearbyPage() {
@@ -31,7 +37,7 @@ export default function NearbyPage() {
     "idle" | "locating" | "loading" | "locked" | "no-location" | "ready" | "error"
   >("idle");
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
-  const [users, setUsers] = useState<NearbyUser[]>([]);
+  const [clusters, setClusters] = useState<NearbyCityCluster[]>([]);
 
   async function shareLocation() {
     setStatus("locating");
@@ -85,7 +91,7 @@ export default function NearbyPage() {
       }
 
       const data = await res.json();
-      setUsers(data.users ?? []);
+      setClusters(data.clusters ?? []);
       if (data.center) {
         // The server returns the viewer's own last-saved coordinates, so
         // the map can center itself on a normal page load — without this,
@@ -194,7 +200,7 @@ export default function NearbyPage() {
           animate={{ opacity: 1 }}
           className="card-shadow mt-4 flex-1 overflow-hidden rounded-2xl"
         >
-          <NearbyMap center={center} users={users} />
+          <NearbyMap center={center} clusters={clusters} />
         </motion.div>
       )}
     </main>
