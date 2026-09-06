@@ -253,7 +253,14 @@
     "radioUrlLabel": "Radyo yayın (stream) URL'si",
     "radioLabelLabel": "İstasyon adı (opsiyonel)",
     "radioSaveButton": "Kaydet",
-    "radioClearHint": "Butonu gizlemek için boş bırak"
+    "radioClearHint": "Butonu gizlemek için boş bırak",
+    "broadcastTitle": "Duyuru gönder",
+    "broadcastSubtitle": "\"Dilva Team\" adından herkesin sohbet kutusuna tek bir mesaj gönderir.",
+    "broadcastPlaceholder": "Duyurunu yaz…",
+    "broadcastButton": "Herkese gönder",
+    "broadcastConfirm": "Onayla: {count} kullanıcıya gönder",
+    "broadcastSending": "Gönderiliyor…",
+    "broadcastSent": "{count} kullanıcıya gönderildi"
   },
   "report": {
     "reportButton": "Bildir",

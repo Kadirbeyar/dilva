@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { onlineWhere } from "@/lib/presence";
 import { getAppSettings } from "@/lib/appSettings";
 import RadioSettingsForm from "@/components/admin/RadioSettingsForm";
+import BroadcastForm from "@/components/admin/BroadcastForm";
 import ReportedPostsPanel, { type ReportedPost } from "@/components/admin/ReportedPostsPanel";
 
 export default async function AdminPage() {
@@ -156,6 +157,10 @@ export default async function AdminPage() {
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
         <ReportedPostsPanel initialReports={reportedPosts} />
         <RadioSettingsForm initialUrl={appSettings.radioStreamUrl} initialLabel={appSettings.radioLabel} />
+      </div>
+
+      <div className="mt-6">
+        <BroadcastForm />
       </div>
     </main>
   );

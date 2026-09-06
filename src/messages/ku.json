@@ -253,7 +253,14 @@
     "radioUrlLabel": "لینکێ stream یێ ڕادیۆیێ",
     "radioLabelLabel": "ناڤێ ڕادیۆیێ (ئیختیاری)",
     "radioSaveButton": "پاشەکەفت بکە",
-    "radioClearHint": "ڤالا بهێلە دا دوگمە ون ببیت"
+    "radioClearHint": "ڤالا بهێلە دا دوگمە ون ببیت",
+    "broadcastTitle": "ناردنا ئاگەهداریێ بۆ هەمیان",
+    "broadcastSubtitle": "نامەکێ بۆ inbox یا چاتی یا هەمی بکارهێنەران دنێریت، ژ لایێ \"Dilva Team\".",
+    "broadcastPlaceholder": "ئاگەهداریا خۆ بنڤیسە…",
+    "broadcastButton": "بۆ هەمیان بنێرە",
+    "broadcastConfirm": "پشتراستکرن: بۆ {count} بکارهێنەران بنێرە",
+    "broadcastSending": "دهێتە ناردن…",
+    "broadcastSent": "بۆ {count} بکارهێنەران هاتە ناردن"
   },
   "report": {
     "reportButton": "ڕاپۆرت",

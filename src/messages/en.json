@@ -253,7 +253,14 @@
     "radioUrlLabel": "Radio stream URL",
     "radioLabelLabel": "Station name (optional)",
     "radioSaveButton": "Save",
-    "radioClearHint": "Leave blank to hide the button"
+    "radioClearHint": "Leave blank to hide the button",
+    "broadcastTitle": "Send an announcement",
+    "broadcastSubtitle": "Sends one message to every user's chat inbox, from \"Dilva Team\".",
+    "broadcastPlaceholder": "Write your announcement…",
+    "broadcastButton": "Send to everyone",
+    "broadcastConfirm": "Confirm: send to {count} users",
+    "broadcastSending": "Sending…",
+    "broadcastSent": "Sent to {count} users"
   },
   "report": {
     "reportButton": "Report",
