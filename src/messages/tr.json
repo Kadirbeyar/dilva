@@ -234,6 +234,7 @@
     "manualPaymentNotePlaceholder": "örn. Ahmed Ali'den gönderildi, son 4 hane 4521",
     "manualPaymentSubmit": "Gönderdim — onayla",
     "manualPaymentError": "Bir şeyler ters gitti, tekrar dene.",
+    "closeModal": "Kapat",
     "referralTitle": "Arkadaşlarını davet et, ücretsiz Premium kazan",
     "referralSubtitle": "Linkini paylaş — bir arkadaşın bu linkle kaydolduğunda, ikiniz de {days} gün ücretsiz Premium kazanırsınız.",
     "referralCopy": "Linki kopyala",

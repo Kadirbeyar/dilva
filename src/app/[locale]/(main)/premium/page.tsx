@@ -2,8 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAppSettings } from "@/lib/appSettings";
-import PricingTable from "@/components/premium/PricingTable";
-import ManualPaymentForm from "@/components/premium/ManualPaymentForm";
+import PremiumPurchaseFlow from "@/components/premium/PremiumPurchaseFlow";
 import ReferralCard from "@/components/premium/ReferralCard";
 
 export default async function PremiumPage() {
@@ -64,17 +63,15 @@ export default async function PremiumPage() {
       )}
 
       <div className="mt-8">
-        <PricingTable currentPlan={isActive ? subscription?.plan : null} />
-      </div>
-
-      {!isActive && (
-        <ManualPaymentForm
+        <PremiumPurchaseFlow
+          currentPlan={isActive ? subscription?.plan : null}
+          isActive={subscriptionActive}
           bankInfo={appSettings.manualPaymentBankInfo}
           cryptoInfo={appSettings.manualPaymentCryptoInfo}
           fibInfo={appSettings.manualPaymentFibInfo}
           initialRequest={manualRequest}
         />
-      )}
+      </div>
 
       <ReferralCard username={user.username} referralCount={referralCount} />
     </main>

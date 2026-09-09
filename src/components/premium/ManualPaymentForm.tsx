@@ -29,14 +29,25 @@ export default function ManualPaymentForm({
   cryptoInfo,
   fibInfo,
   initialRequest,
+  initialPlan,
+  onClose,
 }: {
   bankInfo: string | null;
   cryptoInfo: string | null;
   fibInfo: string | null;
   initialRequest: ManualRequest;
+  /** Pre-selects the plan the user tapped on the pricing cards — see PremiumPurchaseFlow. */
+  initialPlan?: SubscriptionPlan;
+  /**
+   * When set, this form is rendered inside PremiumPurchaseFlow's modal
+   * instead of standalone on the page: swaps the standalone
+   * card/border/margin styling for modal-friendly spacing and shows a
+   * close (✕) button.
+   */
+  onClose?: () => void;
 }) {
   const t = useTranslations("premium");
-  const [plan, setPlan] = useState<SubscriptionPlan>("MONTH_1");
+  const [plan, setPlan] = useState<SubscriptionPlan>(initialPlan ?? "MONTH_1");
   const [method, setMethod] = useState<Method>(
     bankInfo ? "BANK_TRANSFER" : fibInfo ? "FIB" : "CRYPTO"
   );
@@ -47,13 +58,28 @@ export default function ManualPaymentForm({
 
   if (!bankInfo && !fibInfo && !cryptoInfo) return null;
 
+  const closeButton = onClose && (
+    <div className="mb-2 flex justify-end">
+      <button
+        onClick={onClose}
+        aria-label={t("closeModal")}
+        className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+      >
+        ✕
+      </button>
+    </div>
+  );
+
   if (request?.status === "PENDING") {
     return (
-      <div className="mt-8 rounded-2xl border border-brand-200 bg-brand-50 p-5 text-sm dark:border-brand-800 dark:bg-brand-900/20">
-        <p className="font-semibold text-brand-800 dark:text-brand-200">
-          {t("manualPaymentPendingTitle")}
-        </p>
-        <p className="mt-1 text-brand-700 dark:text-brand-300">{t("manualPaymentPendingDesc")}</p>
+      <div className={onClose ? "" : "mt-8"}>
+        {closeButton}
+        <div className="rounded-2xl border border-brand-200 bg-brand-50 p-5 text-sm dark:border-brand-800 dark:bg-brand-900/20">
+          <p className="font-semibold text-brand-800 dark:text-brand-200">
+            {t("manualPaymentPendingTitle")}
+          </p>
+          <p className="mt-1 text-brand-700 dark:text-brand-300">{t("manualPaymentPendingDesc")}</p>
+        </div>
       </div>
     );
   }
@@ -76,7 +102,12 @@ export default function ManualPaymentForm({
   }
 
   return (
-    <div className="mt-8 rounded-2xl border border-gray-200 p-5 dark:border-gray-700">
+    <div
+      className={
+        onClose ? "" : "mt-8 rounded-2xl border border-gray-200 p-5 dark:border-gray-700"
+      }
+    >
+      {closeButton}
       <h2 className="text-lg font-semibold">{t("manualPaymentTitle")}</h2>
       <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{t("manualPaymentSubtitle")}</p>
 

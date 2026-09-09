@@ -234,6 +234,7 @@
     "manualPaymentNotePlaceholder": "نموونه: ژ Ahmed Ali هاتە ناردن، دویماهیک 4521",
     "manualPaymentSubmit": "من پارە نارد — پشتراست بکه",
     "manualPaymentError": "شتەک خەلەت چوو، دووبارە هەوڵ بدە.",
+    "closeModal": "داخستن",
     "referralTitle": "هاڤاڵان بانگ بکه، Premium یا خۆرایی وەربگره",
     "referralSubtitle": "لینکێ خۆ ب هاڤاڵان بدە — دەمێ ئەو خۆتومار بکەن، هەردوکێ هوین {days} روژان Premium یا خۆرایی وەردگرن.",
     "referralCopy": "کوبیکرن",

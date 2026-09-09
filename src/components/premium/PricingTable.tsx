@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { PLAN_CATALOGUE, pricePerMonth } from "@/lib/plans";
@@ -8,25 +7,22 @@ import type { SubscriptionPlan } from "@prisma/client";
 
 const PLAN_ORDER: SubscriptionPlan[] = ["MONTH_1", "MONTH_3", "MONTH_6", "MONTH_12"];
 
+/**
+ * Pure pricing display. Clicking a plan's button just reports the pick
+ * upward via onSelectPlan — see PremiumPurchaseFlow, which decides
+ * what happens next (opens the bank/FIB/crypto modal for most Dilva
+ * users, since Stripe cards mostly don't work from Iraq; falls back
+ * to /api/checkout directly only if no manual method is configured,
+ * or the user already has an active Stripe subscription).
+ */
 export default function PricingTable({
   currentPlan,
+  onSelectPlan,
 }: {
   currentPlan?: SubscriptionPlan | null;
+  onSelectPlan: (plan: SubscriptionPlan) => void;
 }) {
   const t = useTranslations("premium");
-  const [loadingPlan, setLoadingPlan] = useState<SubscriptionPlan | null>(null);
-
-  async function subscribe(plan: SubscriptionPlan) {
-    setLoadingPlan(plan);
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }),
-    });
-    const data = await res.json();
-    setLoadingPlan(null);
-    if (data.url) window.location.href = data.url;
-  }
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -66,15 +62,11 @@ export default function PricingTable({
             <motion.button
               whileHover={{ scale: isCurrent ? 1 : 1.03 }}
               whileTap={{ scale: isCurrent ? 1 : 0.97 }}
-              onClick={() => subscribe(plan)}
-              disabled={loadingPlan !== null || isCurrent}
+              onClick={() => onSelectPlan(plan)}
+              disabled={isCurrent}
               className="mt-3 rounded-full bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-50"
             >
-              {isCurrent
-                ? t("currentPlan")
-                : loadingPlan === plan
-                  ? "…"
-                  : t("subscribe")}
+              {isCurrent ? t("currentPlan") : t("subscribe")}
             </motion.button>
           </motion.div>
         );

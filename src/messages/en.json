@@ -234,6 +234,7 @@
     "manualPaymentNotePlaceholder": "e.g. Sent from Ahmed Ali, last 4 digits 4521",
     "manualPaymentSubmit": "I've sent it — confirm",
     "manualPaymentError": "Something went wrong, please try again.",
+    "closeModal": "Close",
     "referralTitle": "Invite friends, get free Premium",
     "referralSubtitle": "Share your link — when a friend signs up with it, you BOTH get {days} days of free Premium.",
     "referralCopy": "Copy link",
