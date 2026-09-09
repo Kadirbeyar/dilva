@@ -22,40 +22,39 @@ type NearbyUser = {
   distanceKm: number;
 };
 
+type MyVisibility = { hasCoords: boolean; visible: boolean };
+
 export default function NearbyPage() {
   const t = useTranslations("nearby");
   const tc = useTranslations("common");
   const router = useRouter();
 
   const [status, setStatus] = useState<
-    "idle" | "locating" | "loading" | "locked" | "no-location" | "ready" | "error"
+    "idle" | "loading" | "locked" | "no-location" | "ready" | "error"
   >("idle");
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [users, setUsers] = useState<NearbyUser[]>([]);
 
-  async function shareLocation() {
-    setStatus("locating");
-    if (!navigator.geolocation) {
-      setStatus("error");
-      return;
+  // Being FOUND on the map is free for everyone — only viewing the
+  // map (the state above) is Premium-gated. Tracked separately so a
+  // non-Premium user can still turn this on and show up for Premium
+  // viewers nearby, even though `status` above stays "locked" for them.
+  const [myVisibility, setMyVisibility] = useState<MyVisibility | null>(null);
+  const [savingVisibility, setSavingVisibility] = useState(false);
+
+  async function loadMyVisibility() {
+    try {
+      const res = await fetch("/api/profile/me");
+      if (!res.ok) return;
+      const data = await res.json();
+      const p = data.profile;
+      setMyVisibility({
+        hasCoords: p?.latitude != null && p?.longitude != null,
+        visible: Boolean(p?.isLocationVisible),
+      });
+    } catch {
+      // Non-critical — the visibility card just stays hidden if this fails.
     }
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        await fetch("/api/profile/location", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            latitude,
-            longitude,
-            isLocationVisible: true,
-          }),
-        });
-        setCenter({ lat: latitude, lng: longitude });
-        loadNearby();
-      },
-      () => setStatus("error")
-    );
   }
 
   async function loadNearby() {
@@ -105,7 +104,49 @@ export default function NearbyPage() {
     }
   }
 
+  /** First-time opt-in: gets a browser geolocation fix and turns visibility on. */
+  function shareLocation() {
+    setSavingVisibility(true);
+    if (!navigator.geolocation) {
+      setSavingVisibility(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        await fetch("/api/profile/location", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ latitude, longitude, isLocationVisible: true }),
+        });
+        setMyVisibility({ hasCoords: true, visible: true });
+        setSavingVisibility(false);
+        // Refresh in case this viewer is Premium and didn't have a
+        // center yet (status was "no-location").
+        loadNearby();
+      },
+      () => setSavingVisibility(false)
+    );
+  }
+
+  /** Toggles visibility on/off once coordinates already exist — no new geolocation prompt needed. */
+  async function toggleVisibility(next: boolean) {
+    if (next && !myVisibility?.hasCoords) {
+      shareLocation();
+      return;
+    }
+    setSavingVisibility(true);
+    await fetch("/api/profile/location", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isLocationVisible: next }),
+    });
+    setMyVisibility((prev) => (prev ? { ...prev, visible: next } : prev));
+    setSavingVisibility(false);
+  }
+
   useEffect(() => {
+    loadMyVisibility();
     loadNearby();
   }, []);
 
@@ -120,11 +161,43 @@ export default function NearbyPage() {
         {t("title")}
       </motion.h1>
 
+      {/* Visibility card — shown to EVERY signed-in user, Premium or
+          not, since being discoverable is free. Only the map view
+          below is Premium-gated. */}
+      {myVisibility && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card-shadow mt-3 flex items-center justify-between gap-3 rounded-2xl bg-white p-4 dark:bg-gray-800"
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              {t("visibilityTitle")}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{t("visibilityHint")}</p>
+          </div>
+          <button
+            onClick={() => toggleVisibility(!myVisibility.visible)}
+            disabled={savingVisibility}
+            aria-pressed={myVisibility.visible}
+            className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-50 ${
+              myVisibility.visible ? "bg-brand-600" : "bg-gray-300 dark:bg-gray-600"
+            }`}
+          >
+            <span
+              className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                myVisibility.visible ? "translate-x-6 rtl:-translate-x-6" : "translate-x-1 rtl:-translate-x-1"
+              }`}
+            />
+          </button>
+        </motion.div>
+      )}
+
       {status === "locked" && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card-shadow-lift mt-6 flex flex-1 flex-col items-center justify-center rounded-3xl bg-white p-8 text-center dark:bg-gray-800"
+          className="card-shadow-lift mt-4 flex flex-1 flex-col items-center justify-center rounded-3xl bg-white p-8 text-center dark:bg-gray-800"
         >
           <div className="text-4xl">🗺️</div>
           <h2 className="mt-3 text-lg font-semibold">{t("lockedTitle")}</h2>
@@ -144,14 +217,16 @@ export default function NearbyPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card-shadow mt-6 flex flex-1 flex-col items-center justify-center rounded-3xl bg-white p-8 text-center dark:bg-gray-800"
+          className="card-shadow mt-4 flex flex-1 flex-col items-center justify-center rounded-3xl bg-white p-8 text-center dark:bg-gray-800"
         >
           <div className="text-4xl">📍</div>
+          <p className="mt-2 max-w-sm text-sm text-gray-600 dark:text-gray-300">{t("enableLocationHint")}</p>
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={shareLocation}
-            className="mt-5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700"
+            disabled={savingVisibility}
+            className="mt-5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700 disabled:opacity-50"
           >
             {t("enableLocation")}
           </motion.button>
@@ -162,7 +237,7 @@ export default function NearbyPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card-shadow mt-6 flex flex-1 flex-col items-center justify-center gap-3 rounded-3xl bg-white p-8 text-center dark:bg-gray-800"
+          className="card-shadow mt-4 flex flex-1 flex-col items-center justify-center gap-3 rounded-3xl bg-white p-8 text-center dark:bg-gray-800"
         >
           <p className="text-sm text-gray-500 dark:text-gray-400">{tc("error")}</p>
           <motion.button
@@ -176,8 +251,8 @@ export default function NearbyPage() {
         </motion.div>
       )}
 
-      {status === "locating" && (
-        <div className="mt-6 flex flex-1 items-center justify-center text-gray-500 dark:text-gray-400">
+      {status === "loading" && (
+        <div className="mt-4 flex flex-1 items-center justify-center text-gray-500 dark:text-gray-400">
           <motion.span
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 1, ease: "linear" }}

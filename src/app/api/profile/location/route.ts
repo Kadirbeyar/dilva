@@ -4,15 +4,20 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, AuthError } from "@/lib/auth";
 
 const schema = z.object({
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
   isLocationVisible: z.boolean().optional(),
 });
 
 /**
- * Sets the user's coordinates for the Premium "Nearby" feature. The
- * browser geolocation coordinates are sent here; nothing is shared
- * with other users unless isLocationVisible is explicitly true.
+ * Sets the user's coordinates and/or visibility for the "Nearby" map.
+ * latitude/longitude are optional so this can also be called as a
+ * plain visibility toggle ({ isLocationVisible: false }) without
+ * resending coordinates — see nearby/page.tsx's visibility switch,
+ * which any signed-in user can use: being DISCOVERABLE on the map is
+ * free for everyone, only VIEWING the map is Premium-gated (see
+ * /api/nearby). Nothing is shared with other users unless
+ * isLocationVisible is explicitly true.
  */
 export async function POST(req: Request) {
   try {
@@ -22,9 +27,11 @@ export async function POST(req: Request) {
     const updated = await prisma.user.update({
       where: { id: user.id },
       data: {
-        latitude: body.latitude,
-        longitude: body.longitude,
-        locationUpdatedAt: new Date(),
+        ...(body.latitude !== undefined ? { latitude: body.latitude } : {}),
+        ...(body.longitude !== undefined ? { longitude: body.longitude } : {}),
+        ...(body.latitude !== undefined || body.longitude !== undefined
+          ? { locationUpdatedAt: new Date() }
+          : {}),
         ...(body.isLocationVisible !== undefined
           ? { isLocationVisible: body.isLocationVisible }
           : {}),

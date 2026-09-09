@@ -241,7 +241,10 @@
     "lockedTitle": "Discover partners near you",
     "lockedSubtitle": "Dilva Premium unlocks the live map of learners around you.",
     "enableLocation": "Share my location",
-    "upgradeButton": "Upgrade to Premium"
+    "upgradeButton": "Upgrade to Premium",
+    "visibilityTitle": "Show my location to Premium users",
+    "visibilityHint": "Premium users can see you on the nearby map, even if you're not Premium yourself.",
+    "enableLocationHint": "Once you enable your location, the app can show you to nearby Premium users."
   },
   "admin": {
     "title": "Admin dashboard",

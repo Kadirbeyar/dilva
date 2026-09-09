@@ -241,7 +241,10 @@
     "lockedTitle": "هاڤاڵێن نزیکی خۆ بدۆزە",
     "lockedSubtitle": "Dilva Premium نەخشەیا زیندی ya فێرخوازێن دەورهبەرێ تە ڤەدکەت.",
     "enableLocation": "شوینا خۆ بەشدار بکە",
-    "upgradeButton": "دەرباز بۆ Premium"
+    "upgradeButton": "دەرباز بۆ Premium",
+    "visibilityTitle": "دیارکرنا شوینێ من بو یوزەرێن Premium",
+    "visibilityHint": "کاربەرێن Premium دشێن تە ببینن لسەر نەخشا نزیکی، تەنانەت ئەگەر تو خۆ Premium نەبی.",
+    "enableLocationHint": "دویف چالاککرنا شوینێ خۆ، appê دشێت تە بو یوزەرێن Premium یێن نزیکی نیشان بدەت."
   },
   "admin": {
     "title": "ژمارگە (Admin)",

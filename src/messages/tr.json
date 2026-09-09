@@ -241,7 +241,10 @@
     "lockedTitle": "Yakınındaki partnerleri keşfet",
     "lockedSubtitle": "Dilva Premium, çevrendeki öğrencilerin canlı haritasının kilidini açar.",
     "enableLocation": "Konumumu paylaş",
-    "upgradeButton": "Premium'a Geç"
+    "upgradeButton": "Premium'a Geç",
+    "visibilityTitle": "Konumumu Premium kullanıcılara göster",
+    "visibilityHint": "Premium olmasan bile Premium kullanıcılar seni yakındaki haritada görebilir.",
+    "enableLocationHint": "Konumunu etkinleştirdiğinde, uygulama seni yakındaki Premium kullanıcılara gösterebilir."
   },
   "admin": {
     "title": "Yönetici paneli",
