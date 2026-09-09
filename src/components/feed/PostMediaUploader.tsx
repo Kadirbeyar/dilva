@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage } from "@/lib/compressImage";
 
 export type PostMedia = { kind: "image" | "video"; url: string } | null;
 
@@ -44,12 +45,17 @@ export default function PostMediaUploader({
     }
 
     setUploading(true);
-    const ext = file.name.split(".").pop() || (isImage ? "jpg" : "mp4");
+    // Feed photos are viewed full-width in the timeline (not a thumbnail
+    // like the avatar), so a larger cap than the avatar's — big enough
+    // to still look sharp, small enough that a 12MB phone photo doesn't
+    // upload as-is.
+    const uploadFile = isImage ? await compressImage(file, { maxDimension: 1600, quality: 0.82 }) : file;
+    const ext = uploadFile.name.split(".").pop() || (isImage ? "jpg" : "mp4");
     const path = `${userId}/${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from("post-media")
-      .upload(path, file, { cacheControl: "3600" });
+      .upload(path, uploadFile, { cacheControl: "3600" });
 
     setUploading(false);
 
@@ -61,6 +67,29 @@ export default function PostMediaUploader({
     const {
       data: { publicUrl },
     } = supabase.storage.from("post-media").getPublicUrl(path);
+
+    // Optional moderation hook (see lib/moderation.ts) — only ever
+    // runs for photos (videos aren't checked), and is a no-op unless
+    // an admin has configured a provider's API keys. Runs after the
+    // upload since moderation vendors need a real https:// URL to
+    // fetch; a flagged image is deleted again rather than attached.
+    if (isImage) {
+      try {
+        const modRes = await fetch("/api/moderation/check-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: publicUrl }),
+        });
+        const modData = modRes.ok ? await modRes.json() : { safe: true };
+        if (modData.safe === false) {
+          await supabase.storage.from("post-media").remove([path]);
+          setError(t("mediaModerationError"));
+          return;
+        }
+      } catch {
+        // Fail open — see lib/moderation.ts.
+      }
+    }
 
     onChange({ kind: isImage ? "image" : "video", url: publicUrl });
   }

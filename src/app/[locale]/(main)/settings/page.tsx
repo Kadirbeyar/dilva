@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AvatarUploader from "@/components/profile/AvatarUploader";
+import PushNotificationToggle from "@/components/settings/PushNotificationToggle";
 import { flagEmoji } from "@/lib/languageFlags";
 import { MIN_SIGNUP_AGE } from "@/lib/age";
 import { WORLD_COUNTRIES } from "@/lib/countries";
@@ -186,11 +187,14 @@ export default function SettingsPage() {
   return (
     <main className="relative mx-auto max-w-md px-6 py-10">
       <div className="bg-mesh" aria-hidden="true" />
+
+      <PushNotificationToggle />
+
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="card-shadow rounded-3xl bg-white p-7 dark:bg-gray-800"
+        className="card-shadow mt-4 rounded-3xl bg-white p-7 dark:bg-gray-800"
       >
         <h1 className="text-2xl font-bold">{tProfile("editProfile")}</h1>
 

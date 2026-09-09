@@ -10,6 +10,7 @@ import { flagEmoji } from "@/lib/languageFlags";
 import { MIN_SIGNUP_AGE } from "@/lib/age";
 import { WORLD_COUNTRIES } from "@/lib/countries";
 import { countriesMatch, resolveToWorldCountry } from "@/lib/countryMatch";
+import { getStoredReferralCode, clearStoredReferralCode } from "@/lib/referralCapture";
 
 type Language = { code: string; name: string; nativeName: string };
 type TargetRow = { code: string; proficiency: string };
@@ -157,6 +158,7 @@ export default function OnboardingPage() {
         targetLanguages: chosenTargets,
         latitude: coords?.lat,
         longitude: coords?.lng,
+        referralCode: getStoredReferralCode() || undefined,
       }),
     });
     setSubmitting(false);
@@ -169,6 +171,7 @@ export default function OnboardingPage() {
       return;
     }
 
+    clearStoredReferralCode();
     router.push("/feed");
   }
 

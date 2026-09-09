@@ -13,6 +13,7 @@ export default function FeedPage() {
   const [media, setMedia] = useState<PostMedia>(null);
   const [posting, setPosting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [postError, setPostError] = useState<string | null>(null);
 
   async function loadPosts() {
     const res = await fetch("/api/posts");
@@ -33,6 +34,7 @@ export default function FeedPage() {
   async function submitPost() {
     if (!content.trim()) return;
     setPosting(true);
+    setPostError(null);
     const res = await fetch("/api/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -48,6 +50,8 @@ export default function FeedPage() {
       setContent("");
       setMedia(null);
       loadPosts();
+    } else if (res.status === 429) {
+      setPostError(t("rateLimited"));
     }
   }
 
@@ -78,6 +82,7 @@ export default function FeedPage() {
         {currentUserId && (
           <PostMediaUploader userId={currentUserId} media={media} onChange={setMedia} />
         )}
+        {postError && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{postError}</p>}
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-500 dark:text-gray-400">{t("askForCorrections")}</span>
           <motion.button

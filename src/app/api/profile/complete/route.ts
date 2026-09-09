@@ -6,6 +6,7 @@ import { requireUser, AuthError } from "@/lib/auth";
 import { calculateAge, MIN_SIGNUP_AGE } from "@/lib/age";
 import { createClient } from "@/lib/supabase/server";
 import { WORLD_COUNTRIES } from "@/lib/countries";
+import { applyReferralIfEligible } from "@/lib/referral";
 
 const languageSelectionSchema = z.object({
   code: z.string().min(2),
@@ -45,6 +46,13 @@ const bodySchema = z.object({
   // itself never submits without them.
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
+  // Referrer's username, carried through from a ?ref=<username> signup
+  // link (see the landing/signup pages, which stash it in
+  // localStorage until onboarding finishes). Only ever applied on a
+  // genuine first-time onboarding — see the isFirstOnboarding guard
+  // below — so re-submitting this same form later (e.g. from
+  // Settings) can never retroactively attach or change a referral.
+  referralCode: z.string().max(30).optional(),
 });
 
 /**
@@ -86,6 +94,12 @@ export async function POST(req: Request) {
     // and keep the existing value; only a first-time onboarding
     // (country still null) actually applies body.country.
     const country = user.country ?? body.country;
+    // Same signal used for the country lock above: country is only
+    // ever null before a user's very first onboarding submit. Reusing
+    // it here means a later profile edit (Settings reuses this same
+    // endpoint) can never retroactively attach a referral just because
+    // the request happens to include a leftover/forged referralCode.
+    const isFirstOnboarding = user.country == null;
 
     const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const profile = await tx.user.update({
@@ -138,6 +152,16 @@ export async function POST(req: Request) {
     // pool's connection_limit=1.
     const supabase = await createClient();
     await supabase.auth.updateUser({ data: { onboarded: true } });
+
+    if (isFirstOnboarding && body.referralCode) {
+      // Never lets a referral problem fail account creation — the
+      // profile above is already saved at this point either way.
+      try {
+        await applyReferralIfEligible(user.id, body.referralCode);
+      } catch (referralErr) {
+        console.error("[profile/complete] referral", referralErr);
+      }
+    }
 
     return NextResponse.json({ user: updated });
   } catch (err) {

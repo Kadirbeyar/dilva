@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+import { captureReferralFromUrl } from "@/lib/referralCapture";
 
 const LANGUAGE_CHIPS = [
   { label: "کوردی", flag: "🟡" },
@@ -26,6 +28,13 @@ const fadeUp = {
 export default function LandingPage() {
   const t = useTranslations("landing");
   const tAuth = useTranslations("auth");
+
+  // Remembers a ?ref=<username> link (see lib/referralCapture.ts) so a
+  // signup later in this session — even after clicking around the
+  // site first — still credits whoever shared the link.
+  useEffect(() => {
+    captureReferralFromUrl();
+  }, []);
 
   const features = [1, 2, 3, 4].map((n) => ({
     title: t(`feature${n}Title` as any),
@@ -238,6 +247,14 @@ export default function LandingPage() {
 
       <footer className="mx-auto max-w-6xl px-6 pb-10 text-center text-sm text-gray-500 dark:text-gray-400">
         <p>{t("footerTagline")}</p>
+        <div className="mt-3 flex items-center justify-center gap-4">
+          <Link href="/terms" className="underline transition hover:text-gray-700 dark:hover:text-gray-200">
+            {t("footerTerms")}
+          </Link>
+          <Link href="/privacy" className="underline transition hover:text-gray-700 dark:hover:text-gray-200">
+            {t("footerPrivacy")}
+          </Link>
+        </div>
         <p className="mt-2">© {new Date().getFullYear()} Dilva</p>
       </footer>
     </main>

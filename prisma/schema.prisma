@@ -108,6 +108,10 @@ enum NotificationType {
   /// an admin — approval reuses SUBSCRIPTION_ACTIVATED above instead,
   /// since that's already exactly the right message either way.
   MANUAL_PAYMENT_REJECTED
+  /// Sent to BOTH sides of a referral (the referrer and the new
+  /// signup) once the referred person finishes onboarding — see
+  /// lib/referral.ts.
+  REFERRAL_BONUS_EARNED
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -150,6 +154,22 @@ model User {
   /// signup path to becoming an admin.
   isAdmin Boolean @default(false)
 
+  /// Free Premium access granted outside of Stripe/manual payments
+  /// (currently: the referral program — see lib/referral.ts). Kept as
+  /// its own column rather than a fake Subscription row so referral
+  /// bonuses never show up as revenue in the admin dashboard or
+  /// Payment history. isPremiumUser() in lib/premium.ts treats "in the
+  /// future" here as equivalent to an active paid subscription.
+  premiumBonusUntil DateTime?
+
+  /// Set once, at onboarding, if the signup arrived via someone else's
+  /// referral link (?ref=<username>) — never changed afterward, even
+  /// if that person later renames their account. Self-relation to the
+  /// referrer; see the `referrals` field below for the reverse list.
+  referredById String? @db.Uuid
+  referredBy   User?   @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals    User[]  @relation("Referrals")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -178,6 +198,8 @@ model User {
   reportsReceived Report[] @relation("ReportedUser")
 
   notifications Notification[]
+
+  pushSubscriptions PushSubscription[]
 
   /// Rows where THIS user is the one doing the following (i.e. people
   /// I follow). See Follow model below.
@@ -606,4 +628,45 @@ model AppSetting {
   updatedAt DateTime @updatedAt
 
   @@map("app_settings")
+}
+
+/// Backing store for lib/rateLimit.ts's fixed-window limiter (posts,
+/// messages, and similar write-heavy endpoints). One row per (key,
+/// windowStart) — key encodes both the action and who's doing it, e.g.
+/// "post_create:<userId>". Old rows are opportunistically deleted by
+/// the same helper rather than needing a cron job. No Prisma relations
+/// on purpose: this table is written via raw SQL (a single upsert per
+/// request) rather than the Prisma client API, to keep each check to
+/// one round trip against the connection_limit=1 pooler.
+model RateLimit {
+  key         String
+  windowStart DateTime
+  count       Int      @default(1)
+
+  @@id([key, windowStart])
+  @@map("rate_limits")
+}
+
+/// One row per browser/device that has granted Web Push permission —
+/// a user can have several (phone + laptop, etc.). `endpoint` is the
+/// push service URL the browser gave us (unique per
+/// browser+device+site) and `p256dh`/`auth` are the encryption keys
+/// web-push needs to encrypt the payload — see lib/webpush.ts, which
+/// deletes a row here automatically once its push service reports the
+/// subscription as gone (410/404), e.g. after the user uninstalls the
+/// app or clears site data.
+model PushSubscription {
+  id String @id @default(cuid())
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  endpoint String @unique @db.Text
+  p256dh   String @db.Text
+  auth     String @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }

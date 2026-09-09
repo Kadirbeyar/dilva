@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage } from "@/lib/compressImage";
 
 /**
  * Lets the signed-in user pick any image from their device and
@@ -41,14 +42,19 @@ export default function AvatarUploader({
     setPreview(URL.createObjectURL(file));
     setUploading(true);
 
-    const ext = file.name.split(".").pop() || "jpg";
+    // Avatars are only ever shown small (a ~112px circle at most), so
+    // there's no reason to keep a phone photo's full 3000px+
+    // resolution — shrinking it client-side saves the user's upload
+    // data and everyone else's data loading it back down.
+    const compressed = await compressImage(file, { maxDimension: 800, quality: 0.85 });
+    const ext = compressed.name.split(".").pop() || "jpg";
     // Fixed filename per user (not per-upload) so re-uploading just
     // replaces the old avatar instead of accumulating orphaned files.
     const path = `${userId}/avatar.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { upsert: true, cacheControl: "3600" });
+      .upload(path, compressed, { upsert: true, cacheControl: "3600" });
 
     setUploading(false);
 
@@ -60,6 +66,29 @@ export default function AvatarUploader({
     const {
       data: { publicUrl },
     } = supabase.storage.from("avatars").getPublicUrl(path);
+
+    // Optional moderation hook (see lib/moderation.ts) — a no-op that
+    // always reports "safe" unless the admin has configured a
+    // provider's API keys. Runs after the upload (moderation vendors
+    // need a real https:// URL to fetch), so a flagged image is
+    // deleted again rather than never having been stored.
+    try {
+      const modRes = await fetch("/api/moderation/check-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: publicUrl }),
+      });
+      const modData = modRes.ok ? await modRes.json() : { safe: true };
+      if (modData.safe === false) {
+        await supabase.storage.from("avatars").remove([path]);
+        setPreview(currentUrl ?? null);
+        setError("This photo doesn't meet Dilva's content guidelines — please choose another.");
+        return;
+      }
+    } catch {
+      // Moderation check itself failing is not a reason to block the
+      // upload — see lib/moderation.ts's fail-open design.
+    }
 
     // Cache-bust so the new image shows immediately even though the
     // path (and therefore URL) is identical to the previous upload.

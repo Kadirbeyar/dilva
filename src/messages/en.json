@@ -30,7 +30,9 @@
     "ctaTitle": "Your next conversation is waiting",
     "ctaSubtitle": "It's free to start — pick your languages and say hello.",
     "ctaButton": "Join Dilva free",
-    "footerTagline": "Language exchange & social learning, in Kurdish (Badini), Turkish and English."
+    "footerTagline": "Language exchange & social learning, in Kurdish (Badini), Turkish and English.",
+    "footerTerms": "Terms of Service",
+    "footerPrivacy": "Privacy Policy"
   },
   "common": {
     "appName": "Dilva",
@@ -74,7 +76,8 @@
     "signInCta": "Sign in",
     "signUpCta": "Sign up",
     "signInError": "Incorrect email or password.",
-    "signUpSuccess": "Check your email to confirm your account."
+    "signUpSuccess": "Check your email to confirm your account.",
+    "agreeToLegal": "By signing up, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
   },
   "onboarding": {
     "title": "Set up your Dilva profile",
@@ -141,7 +144,9 @@
     "addMedia": "Add photo/video",
     "removeMedia": "Remove media",
     "mediaTypeError": "Only images or videos can be attached",
-    "mediaSizeError": "File must be under 50MB"
+    "mediaSizeError": "File must be under 50MB",
+    "rateLimited": "You're posting a bit too fast — please wait a moment and try again.",
+    "mediaModerationError": "This photo doesn't meet Dilva's content guidelines — please choose another."
   },
   "matches": {
     "title": "Find language partners",
@@ -227,7 +232,13 @@
     "manualPaymentNoteLabel": "Details to help us confirm it (sender name, last digits, or tx hash)",
     "manualPaymentNotePlaceholder": "e.g. Sent from Ahmed Ali, last 4 digits 4521",
     "manualPaymentSubmit": "I've sent it — confirm",
-    "manualPaymentError": "Something went wrong, please try again."
+    "manualPaymentError": "Something went wrong, please try again.",
+    "referralTitle": "Invite friends, get free Premium",
+    "referralSubtitle": "Share your link — when a friend signs up with it, you BOTH get {days} days of free Premium.",
+    "referralCopy": "Copy link",
+    "referralCopied": "Copied ✓",
+    "referralCount": "{count, plural, =0 {No one has signed up with your link yet} one {# person has signed up with your link} other {# people have signed up with your link}}",
+    "referralBonusActive": "You have referral Premium until {date}."
   },
   "visitors": {
     "title": "Profile visitors",
@@ -317,7 +328,8 @@
     "subscriptionExpiring": "Your Premium subscription is expiring soon",
     "system": "Notification",
     "someone": "Someone",
-    "manualPaymentRejected": "Your manual payment request was rejected — please try again or use another method."
+    "manualPaymentRejected": "Your manual payment request was rejected — please try again or use another method.",
+    "referralBonusEarned": "🎉 You've earned {days} days of free Premium from a referral!"
   },
   "install": {
     "androidTitle": "Install Dilva on your phone",
@@ -341,5 +353,10 @@
     "alreadyInstalledDesc": "You already have the Dilva app on this device — just open it.",
     "openButton": "Open Dilva",
     "backToSite": "Back to the website"
+  },
+  "settings": {
+    "pushTitle": "Push notifications",
+    "pushHint": "Get notified about new messages and important Dilva announcements, even when the app isn't open.",
+    "pushDeniedHint": "You've blocked notifications for this browser — you can change that in your browser's site settings."
   }
 }

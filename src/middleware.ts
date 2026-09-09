@@ -100,7 +100,7 @@ export async function middleware(request: NextRequest) {
   // profile/complete) rather than a DB column, so this reuses the
   // supabase.auth.getUser() call above instead of adding a Prisma
   // query to every single navigation.
-  const EXEMPT_FROM_ONBOARDING = ["/onboarding", "/login", "/signup"];
+  const EXEMPT_FROM_ONBOARDING = ["/onboarding", "/login", "/signup", "/terms", "/privacy", "/install"];
   const onboarded = Boolean((user?.user_metadata as { onboarded?: boolean } | undefined)?.onboarded);
   const exempt = EXEMPT_FROM_ONBOARDING.some((p) => cleanPath === p || cleanPath.startsWith(p + "/"));
 

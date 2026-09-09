@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUser, AuthError } from "@/lib/auth";
+import { enforceRateLimit, RateLimitError } from "@/lib/rateLimit";
 
 const schema = z.object({ content: z.string().min(1).max(1000) });
 
@@ -26,6 +27,10 @@ export async function POST(
 ) {
   try {
     const user = await requireUser();
+    // Comments are quicker to fire off than posts, so a slightly
+    // higher limit — still enough to block a script hammering one
+    // post's comment box.
+    await enforceRateLimit(`comment_create:${user.id}`, 20, 600);
     const { id: postId } = await params;
     const { content } = schema.parse(await req.json());
 
@@ -52,6 +57,12 @@ export async function POST(
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (err instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: "rate_limited", retryAfterSeconds: err.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(err.retryAfterSeconds) } }
+      );
     }
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: "validation_error" }, { status: 400 });

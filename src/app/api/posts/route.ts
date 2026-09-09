@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUser, AuthError } from "@/lib/auth";
+import { enforceRateLimit, RateLimitError } from "@/lib/rateLimit";
 
 const createPostSchema = z.object({
   content: z.string().min(1).max(2000),
@@ -71,6 +72,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
+    // Max 8 posts per 10 minutes per account — generous for a real
+    // person posting updates, but enough to stop a script from
+    // flooding the feed. Checked after auth (so it's keyed per-account,
+    // not per-IP) but before the DB write it's protecting.
+    await enforceRateLimit(`post_create:${user.id}`, 8, 600);
     const body = createPostSchema.parse(await req.json());
 
     const post = await prisma.post.create({
@@ -94,6 +100,12 @@ export async function POST(req: Request) {
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (err instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: "rate_limited", retryAfterSeconds: err.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(err.retryAfterSeconds) } }
+      );
     }
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: "validation_error" }, { status: 400 });

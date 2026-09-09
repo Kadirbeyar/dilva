@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { REFERRAL_BONUS_DAYS } from "@/lib/referral";
 
 type NotificationUser = {
   id: string;
@@ -22,7 +23,8 @@ type NotificationType =
   | "SUBSCRIPTION_ACTIVATED"
   | "SUBSCRIPTION_EXPIRING"
   | "SYSTEM"
-  | "MANUAL_PAYMENT_REJECTED";
+  | "MANUAL_PAYMENT_REJECTED"
+  | "REFERRAL_BONUS_EARNED";
 
 export type NotificationItem = {
   id: string;
@@ -44,6 +46,7 @@ export const MESSAGE_KEY: Record<NotificationType, string> = {
   SUBSCRIPTION_EXPIRING: "subscriptionExpiring",
   SYSTEM: "system",
   MANUAL_PAYMENT_REJECTED: "manualPaymentRejected",
+  REFERRAL_BONUS_EARNED: "referralBonusEarned",
 };
 
 /** Where clicking a notification should take you. */
@@ -60,6 +63,7 @@ export function targetHref(n: NotificationItem): string | null {
     case "NEW_MESSAGE":
       return d.conversationId ? `/chat/${d.conversationId}` : "/chat";
     case "MANUAL_PAYMENT_REJECTED":
+    case "REFERRAL_BONUS_EARNED":
       return "/premium";
     default:
       return null;
@@ -188,7 +192,10 @@ export default function NotificationBell() {
                           )}
                         </span>
                         <span className="flex-1">
-                          {t(MESSAGE_KEY[n.type] as any, { name: actorName(n) })}
+                          {t(MESSAGE_KEY[n.type] as any, {
+                            name: actorName(n),
+                            days: (n.data?.days as number) ?? REFERRAL_BONUS_DAYS,
+                          })}
                         </span>
                         {!n.isRead && (
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-500" />

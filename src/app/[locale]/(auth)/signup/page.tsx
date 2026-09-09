@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { captureReferralFromUrl } from "@/lib/referralCapture";
 
 export default function SignUpPage() {
   const t = useTranslations("auth");
@@ -18,6 +19,12 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Covers a signup link shared directly (dilva.app/.../signup?ref=...)
+  // rather than through the landing page — see lib/referralCapture.ts.
+  useEffect(() => {
+    captureReferralFromUrl();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -141,6 +148,21 @@ export default function SignUpPage() {
           <Link href="/login" className="font-medium text-brand-700 underline dark:text-brand-300">
             {t("signInCta")}
           </Link>
+        </p>
+
+        <p className="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
+          {t.rich("agreeToLegal", {
+            terms: (chunks) => (
+              <Link href="/terms" className="underline">
+                {chunks}
+              </Link>
+            ),
+            privacy: (chunks) => (
+              <Link href="/privacy" className="underline">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </motion.div>
     </main>

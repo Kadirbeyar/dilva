@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser, AuthError } from "@/lib/auth";
+import { enforceRateLimit, RateLimitError } from "@/lib/rateLimit";
+import { sendPushToUser } from "@/lib/webpush";
 
 const sendSchema = z.object({
   content: z.string().min(1).max(4000),
@@ -68,6 +70,10 @@ export async function POST(
     const user = await requireUser();
     const { id: conversationId } = await params;
     await assertParticipant(conversationId, user.id);
+    // 60 messages/minute per account is well above real typing speed
+    // (even fast back-and-forth chat) but stops a script from
+    // spamming a conversation or hammering Supabase Realtime.
+    await enforceRateLimit(`message_send:${user.id}`, 60, 60);
 
     const body = sendSchema.parse(await req.json());
 
@@ -102,12 +108,40 @@ export async function POST(
           data: { conversationId, messageId: message.id, fromUserId: user.id },
         })),
       });
+
+      // Best-effort push (no-op if VAPID isn't configured — see
+      // lib/webpush.ts) so a chat message reaches someone even when
+      // Dilva isn't open in a tab. Never allowed to fail the send
+      // itself — the message and in-app notification above are
+      // already saved either way.
+      // Sequential, not Promise.all — same connection_limit=1 reason
+      // as everywhere else here; each sendPushToUser call does its own
+      // DB read for that recipient's subscriptions. Conversations are
+      // 1-1 in this app today, so in practice this is a single call.
+      const senderName = user.displayName || user.username;
+      try {
+        for (const p of otherParticipants as { userId: string }[]) {
+          await sendPushToUser(p.userId, {
+            title: senderName,
+            body: body.type === "TEXT" ? body.content : "📎 Sent an attachment",
+            url: `/chat/${conversationId}`,
+          });
+        }
+      } catch (pushErr) {
+        console.error("[messages:POST] push", pushErr);
+      }
     }
 
     return NextResponse.json({ message }, { status: 201 });
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (err instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: "rate_limited", retryAfterSeconds: err.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(err.retryAfterSeconds) } }
+      );
     }
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: "validation_error" }, { status: 400 });

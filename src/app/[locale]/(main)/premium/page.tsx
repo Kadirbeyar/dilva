@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAppSettings } from "@/lib/appSettings";
 import PricingTable from "@/components/premium/PricingTable";
 import ManualPaymentForm from "@/components/premium/ManualPaymentForm";
+import ReferralCard from "@/components/premium/ReferralCard";
 
 export default async function PremiumPage() {
   const t = await getTranslations("premium");
@@ -19,7 +20,14 @@ export default async function PremiumPage() {
     orderBy: { createdAt: "desc" },
     select: { id: true, plan: true, method: true, status: true },
   });
-  const isActive = subscription?.status === "ACTIVE" || subscription?.status === "TRIALING";
+  const subscriptionActive = subscription?.status === "ACTIVE" || subscription?.status === "TRIALING";
+  // A referral bonus (see lib/referral.ts) also counts as "has
+  // Premium" for hiding the pay form/pricing highlight, but it's
+  // tracked separately from `subscription` — see lib/premium.ts's
+  // isPremiumUser, which this mirrors.
+  const bonusActive = Boolean(user.premiumBonusUntil && user.premiumBonusUntil.getTime() > Date.now());
+  const isActive = subscriptionActive || bonusActive;
+  const referralCount = await prisma.user.count({ where: { referredById: user.id } });
 
   return (
     <main className="relative mx-auto max-w-4xl px-4 py-10">
@@ -39,13 +47,19 @@ export default async function PremiumPage() {
         </li>
       </ul>
 
-      {isActive && subscription?.currentPeriodEnd && (
+      {subscriptionActive && subscription?.currentPeriodEnd && (
         <div className="mt-6 rounded-xl bg-brand-50 p-4 text-sm dark:bg-brand-900/20">
           <p>
             {t("expiresOn", {
               date: subscription.currentPeriodEnd.toLocaleDateString(),
             })}
           </p>
+        </div>
+      )}
+
+      {!subscriptionActive && bonusActive && user.premiumBonusUntil && (
+        <div className="mt-6 rounded-xl bg-brand-50 p-4 text-sm dark:bg-brand-900/20">
+          <p>{t("referralBonusActive", { date: user.premiumBonusUntil.toLocaleDateString() })}</p>
         </div>
       )}
 
@@ -60,6 +74,8 @@ export default async function PremiumPage() {
           initialRequest={manualRequest}
         />
       )}
+
+      <ReferralCard username={user.username} referralCount={referralCount} />
     </main>
   );
 }

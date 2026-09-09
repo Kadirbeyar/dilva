@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, AuthError, ForbiddenError } from "@/lib/auth";
 import { DILVA_TEAM_USER_ID } from "@/lib/systemAccounts";
+import { sendPushToUsers } from "@/lib/webpush";
 
 const schema = z.object({ message: z.string().min(1).max(2000) });
 
@@ -121,6 +122,23 @@ export async function POST(req: Request) {
       where: { id: { in: [...conversationIdByUser.values()] } },
       data: { updatedAt: new Date() },
     });
+
+    // Best-effort — a no-op entirely when VAPID keys aren't configured
+    // (see lib/webpush.ts), and never allowed to fail the broadcast
+    // itself (the in-app chat message above is already sent either
+    // way). NOTE: this is a sequential per-recipient loop, which is
+    // fine at Dilva's current scale but would need a queue/worker
+    // instead of running inline in this route once the user base gets
+    // into the thousands (Vercel's function time limit would become
+    // the constraint, not the DB).
+    try {
+      await sendPushToUsers(
+        recipients.map((u: (typeof recipients)[number]) => u.id),
+        { title: "Dilva", body: message, url: "/chat" }
+      );
+    } catch (pushErr) {
+      console.error("[admin/broadcast] push", pushErr);
+    }
 
     return NextResponse.json({ sent: recipients.length });
   } catch (err) {

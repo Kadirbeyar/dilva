@@ -19,15 +19,19 @@ export function isSubscriptionActive(sub: Subscription | null): boolean {
 /**
  * Checks whether `userId` currently has Premium access. Reads the
  * denormalized User.isPremiumCached flag first (fast path, kept in
- * sync by the Stripe webhook), falling back to a real Subscription
- * lookup so access is still correct even if the cache is stale.
+ * sync by the Stripe webhook), then an unexpired referral bonus (see
+ * lib/referral.ts — intentionally NOT cached on isPremiumCached, so a
+ * bonus expiring doesn't need its own webhook/cron to flip that flag
+ * back off), falling back to a real Subscription lookup so access is
+ * still correct even if the cache is stale.
  */
 export async function isPremiumUser(userId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { isPremiumCached: true },
+    select: { isPremiumCached: true, premiumBonusUntil: true },
   });
   if (user?.isPremiumCached) return true;
+  if (user?.premiumBonusUntil && user.premiumBonusUntil.getTime() > Date.now()) return true;
 
   const sub = await prisma.subscription.findUnique({ where: { userId } });
   return isSubscriptionActive(sub);
