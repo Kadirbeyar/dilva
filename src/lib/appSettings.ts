@@ -11,6 +11,8 @@ export async function getAppSettings() {
   return {
     radioStreamUrl: row?.radioStreamUrl ?? null,
     radioLabel: row?.radioLabel ?? null,
+    manualPaymentBankInfo: row?.manualPaymentBankInfo ?? null,
+    manualPaymentCryptoInfo: row?.manualPaymentCryptoInfo ?? null,
   };
 }
 
@@ -19,5 +21,17 @@ export async function setRadioSetting(radioStreamUrl: string | null, radioLabel:
     where: { id: "singleton" },
     update: { radioStreamUrl, radioLabel },
     create: { id: "singleton", radioStreamUrl, radioLabel },
+  });
+}
+
+/** Admin-editable bank/Qi Card + crypto instructions shown on /premium — see prisma/sql/11_manual_payments.sql. */
+export async function setManualPaymentSettings(
+  manualPaymentBankInfo: string | null,
+  manualPaymentCryptoInfo: string | null
+) {
+  return prisma.appSetting.upsert({
+    where: { id: "singleton" },
+    update: { manualPaymentBankInfo, manualPaymentCryptoInfo },
+    create: { id: "singleton", manualPaymentBankInfo, manualPaymentCryptoInfo },
   });
 }

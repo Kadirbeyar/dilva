@@ -8,6 +8,8 @@ import { getAppSettings } from "@/lib/appSettings";
 import RadioSettingsForm from "@/components/admin/RadioSettingsForm";
 import BroadcastForm from "@/components/admin/BroadcastForm";
 import ReportedPostsPanel, { type ReportedPost } from "@/components/admin/ReportedPostsPanel";
+import ManualPaymentSettingsForm from "@/components/admin/ManualPaymentSettingsForm";
+import ManualPaymentsPanel, { type ManualPaymentRequestItem } from "@/components/admin/ManualPaymentsPanel";
 
 export default async function AdminPage() {
   const t = await getTranslations("admin");
@@ -67,6 +69,25 @@ export default async function AdminPage() {
     }));
 
   const appSettings = await getAppSettings();
+
+  const manualPaymentsRaw = await prisma.manualPaymentRequest.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 100,
+    include: {
+      user: { select: { username: true, displayName: true, avatarUrl: true } },
+    },
+  });
+  const manualPayments: ManualPaymentRequestItem[] = manualPaymentsRaw.map(
+    (r: (typeof manualPaymentsRaw)[number]) => ({
+      id: r.id,
+      plan: r.plan,
+      method: r.method,
+      note: r.note,
+      status: r.status,
+      createdAt: r.createdAt.toISOString(),
+      user: r.user,
+    })
+  );
 
   const byCountry = byCountryRaw.map((row: { country: string | null; _count: { _all: number } }) => ({
     country: row.country,
@@ -157,6 +178,14 @@ export default async function AdminPage() {
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
         <ReportedPostsPanel initialReports={reportedPosts} />
         <RadioSettingsForm initialUrl={appSettings.radioStreamUrl} initialLabel={appSettings.radioLabel} />
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <ManualPaymentsPanel initialRequests={manualPayments} />
+        <ManualPaymentSettingsForm
+          initialBankInfo={appSettings.manualPaymentBankInfo}
+          initialCryptoInfo={appSettings.manualPaymentCryptoInfo}
+        />
       </div>
 
       <div className="mt-6">

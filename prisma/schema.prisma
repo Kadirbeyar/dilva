@@ -71,6 +71,22 @@ enum PaymentStatus {
   REFUNDED
 }
 
+/// How a user says they paid outside Stripe — see ManualPaymentRequest.
+/// Iraq (and much of the world) isn't reachable by Stripe/PayPal/etc.,
+/// so this lets Premium be sold TODAY via a manual "I sent the money,
+/// here's proof" -> admin-reviews-and-approves flow, in parallel with
+/// getting a real local payment gateway (PayTabs/Qi Card) approved.
+enum ManualPaymentMethod {
+  BANK_TRANSFER
+  CRYPTO
+}
+
+enum ManualPaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ReportStatus {
   OPEN
   REVIEWING
@@ -88,6 +104,10 @@ enum NotificationType {
   SUBSCRIPTION_ACTIVATED
   SUBSCRIPTION_EXPIRING
   SYSTEM
+  /// A manual (bank transfer / crypto) Premium payment was rejected by
+  /// an admin — approval reuses SUBSCRIPTION_ACTIVATED above instead,
+  /// since that's already exactly the right message either way.
+  MANUAL_PAYMENT_REJECTED
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -145,6 +165,8 @@ model User {
 
   subscription Subscription?
   payments     Payment[]
+
+  manualPaymentRequests ManualPaymentRequest[]
 
   visitsMade     ProfileVisit[] @relation("Visitor")
   visitsReceived ProfileVisit[] @relation("Visited")
@@ -468,6 +490,40 @@ model Payment {
   @@map("payments")
 }
 
+/// A user's own claim of having paid outside Stripe (bank/Qi Card
+/// transfer, or crypto) — the fast-to-launch stopgap while a real
+/// local payment gateway is still being set up (see lib/plans.ts for
+/// the plan catalogue this reuses). An admin reviews `note` (whatever
+/// the user typed to help match it to a real transfer — sender name,
+/// last digits, a crypto tx hash) against what actually arrived, then
+/// approves or rejects from /admin. Approving does exactly what the
+/// Stripe webhook does on a real payment: upserts Subscription,
+/// creates a Payment record, and flips User.isPremiumCached.
+model ManualPaymentRequest {
+  id String @id @default(cuid())
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan   SubscriptionPlan
+  method ManualPaymentMethod
+
+  note String @db.Text
+
+  status ManualPaymentStatus @default(PENDING)
+
+  reviewedAt   DateTime?
+  /// Admin who approved/rejected this. Deliberately not a Prisma
+  /// relation (no back-reference needed on User) — just the raw id.
+  reviewedById String? @db.Uuid
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([userId])
+  @@map("manual_payment_requests")
+}
+
 // ─────────────────────────────────────────────────────────────
 // Safety & notifications
 // ─────────────────────────────────────────────────────────────
@@ -539,7 +595,15 @@ model AppSetting {
   id             String  @id @default("singleton")
   radioStreamUrl String?
   radioLabel     String?
-  updatedAt      DateTime @updatedAt
+
+  /// Free-text instructions shown on /premium for paying manually —
+  /// bank/Qi Card details and a crypto (USDT) address/network. Kept
+  /// here (admin-editable, no redeploy) rather than hardcoded, since
+  /// account details can change and shouldn't require a code change.
+  manualPaymentBankInfo   String? @db.Text
+  manualPaymentCryptoInfo String? @db.Text
+
+  updatedAt DateTime @updatedAt
 
   @@map("app_settings")
 }

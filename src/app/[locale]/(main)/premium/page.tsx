@@ -1,14 +1,24 @@
 import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAppSettings } from "@/lib/appSettings";
 import PricingTable from "@/components/premium/PricingTable";
+import ManualPaymentForm from "@/components/premium/ManualPaymentForm";
 
 export default async function PremiumPage() {
   const t = await getTranslations("premium");
   const user = await getCurrentUser();
   if (!user) return null;
 
+  // Sequential, not Promise.all — see admin/page.tsx's comment on the
+  // same pattern (Supabase pooler has connection_limit=1).
   const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
+  const appSettings = await getAppSettings();
+  const manualRequest = await prisma.manualPaymentRequest.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, plan: true, method: true, status: true },
+  });
   const isActive = subscription?.status === "ACTIVE" || subscription?.status === "TRIALING";
 
   return (
@@ -42,6 +52,14 @@ export default async function PremiumPage() {
       <div className="mt-8">
         <PricingTable currentPlan={isActive ? subscription?.plan : null} />
       </div>
+
+      {!isActive && (
+        <ManualPaymentForm
+          bankInfo={appSettings.manualPaymentBankInfo}
+          cryptoInfo={appSettings.manualPaymentCryptoInfo}
+          initialRequest={manualRequest}
+        />
+      )}
     </main>
   );
 }

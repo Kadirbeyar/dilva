@@ -216,7 +216,18 @@
     "currentPlan": "Your current plan",
     "manageSubscription": "Manage subscription",
     "expiresOn": "Renews/expires on {date}",
-    "cancelSubscription": "Cancel subscription"
+    "cancelSubscription": "Cancel subscription",
+    "manualPaymentTitle": "Pay manually (bank or crypto)",
+    "manualPaymentSubtitle": "If your card isn't accepted internationally, send the payment directly and confirm below — Premium activates once an admin reviews it.",
+    "manualPaymentPendingTitle": "Your request is being reviewed",
+    "manualPaymentPendingDesc": "The Dilva team is checking your payment and will activate Premium shortly — this is usually quick.",
+    "manualPaymentRejectedNotice": "Your previous request was rejected (the payment may not have been found) — double-check the details and try again.",
+    "manualPaymentMethodBankTitle": "Bank transfer / Qi Card",
+    "manualPaymentMethodCryptoTitle": "Crypto (USDT)",
+    "manualPaymentNoteLabel": "Details to help us confirm it (sender name, last digits, or tx hash)",
+    "manualPaymentNotePlaceholder": "e.g. Sent from Ahmed Ali, last 4 digits 4521",
+    "manualPaymentSubmit": "I've sent it — confirm",
+    "manualPaymentError": "Something went wrong, please try again."
   },
   "visitors": {
     "title": "Profile visitors",
@@ -260,7 +271,23 @@
     "broadcastButton": "Send to everyone",
     "broadcastConfirm": "Confirm: send to {count} users",
     "broadcastSending": "Sending…",
-    "broadcastSent": "Sent to {count} users"
+    "broadcastSent": "Sent to {count} users",
+    "manualPaymentSettingsTitle": "Manual payment details",
+    "manualPaymentSettingsSubtitle": "Shown to users on the Premium page.",
+    "manualPaymentBankLabel": "Bank transfer / Qi Card",
+    "manualPaymentBankPlaceholder": "e.g. Name — Kadir X, Qi Card number — 1234 5678 9012 3456",
+    "manualPaymentCryptoLabel": "Crypto (USDT)",
+    "manualPaymentCryptoPlaceholder": "e.g. USDT (TRC20) — your wallet address",
+    "manualPaymentsTitle": "Manual payment requests",
+    "manualPaymentsEmpty": "No pending requests",
+    "manualPaymentMethodBank": "Bank transfer",
+    "manualPaymentMethodCrypto": "Crypto",
+    "manualPaymentStatusPending": "Pending",
+    "manualPaymentStatusApproved": "Approved",
+    "manualPaymentStatusRejected": "Rejected",
+    "manualPaymentApprove": "Approve & grant Premium",
+    "manualPaymentReject": "Reject",
+    "manualPaymentsRecent": "Recently reviewed"
   },
   "report": {
     "reportButton": "Report",
@@ -286,7 +313,8 @@
     "subscriptionActivated": "Your Premium subscription is active",
     "subscriptionExpiring": "Your Premium subscription is expiring soon",
     "system": "Notification",
-    "someone": "Someone"
+    "someone": "Someone",
+    "manualPaymentRejected": "Your manual payment request was rejected — please try again or use another method."
   },
   "install": {
     "androidTitle": "Install Dilva on your phone",

@@ -21,7 +21,8 @@ type NotificationType =
   | "PROFILE_VISIT"
   | "SUBSCRIPTION_ACTIVATED"
   | "SUBSCRIPTION_EXPIRING"
-  | "SYSTEM";
+  | "SYSTEM"
+  | "MANUAL_PAYMENT_REJECTED";
 
 export type NotificationItem = {
   id: string;
@@ -42,6 +43,7 @@ export const MESSAGE_KEY: Record<NotificationType, string> = {
   SUBSCRIPTION_ACTIVATED: "subscriptionActivated",
   SUBSCRIPTION_EXPIRING: "subscriptionExpiring",
   SYSTEM: "system",
+  MANUAL_PAYMENT_REJECTED: "manualPaymentRejected",
 };
 
 /** Where clicking a notification should take you. */
@@ -57,6 +59,8 @@ export function targetHref(n: NotificationItem): string | null {
       return n.fromUser ? `/profile/${n.fromUser.username}` : null;
     case "NEW_MESSAGE":
       return d.conversationId ? `/chat/${d.conversationId}` : "/chat";
+    case "MANUAL_PAYMENT_REJECTED":
+      return "/premium";
     default:
       return null;
   }

@@ -216,7 +216,18 @@
     "currentPlan": "Mevcut paketin",
     "manageSubscription": "Aboneliği yönet",
     "expiresOn": "{date} tarihinde yenilenir/sona erer",
-    "cancelSubscription": "Aboneliği iptal et"
+    "cancelSubscription": "Aboneliği iptal et",
+    "manualPaymentTitle": "Elle öde (banka veya kripto)",
+    "manualPaymentSubtitle": "Kartın uluslararası kabul edilmiyorsa, ödemeyi doğrudan gönder ve aşağıdan onayla — bir yönetici incelediğinde Premium aktifleşir.",
+    "manualPaymentPendingTitle": "Talebin inceleniyor",
+    "manualPaymentPendingDesc": "Dilva ekibi ödemeni kontrol ediyor ve kısa sürede Premium'u aktifleştirecek.",
+    "manualPaymentRejectedNotice": "Önceki talebin reddedildi (ödeme bulunamamış olabilir) — bilgileri kontrol edip tekrar dene.",
+    "manualPaymentMethodBankTitle": "Banka havalesi / Qi Card",
+    "manualPaymentMethodCryptoTitle": "Kripto (USDT)",
+    "manualPaymentNoteLabel": "Onaylamamıza yardımcı olacak bilgi (gönderen adı, son haneler veya tx hash)",
+    "manualPaymentNotePlaceholder": "örn. Ahmed Ali'den gönderildi, son 4 hane 4521",
+    "manualPaymentSubmit": "Gönderdim — onayla",
+    "manualPaymentError": "Bir şeyler ters gitti, tekrar dene."
   },
   "visitors": {
     "title": "Profil ziyaretçileri",
@@ -260,7 +271,23 @@
     "broadcastButton": "Herkese gönder",
     "broadcastConfirm": "Onayla: {count} kullanıcıya gönder",
     "broadcastSending": "Gönderiliyor…",
-    "broadcastSent": "{count} kullanıcıya gönderildi"
+    "broadcastSent": "{count} kullanıcıya gönderildi",
+    "manualPaymentSettingsTitle": "Manuel ödeme bilgileri",
+    "manualPaymentSettingsSubtitle": "Premium sayfasında kullanıcılara gösterilir.",
+    "manualPaymentBankLabel": "Banka havalesi / Qi Card",
+    "manualPaymentBankPlaceholder": "örn. Ad — Kadir X, Qi Card numarası — 1234 5678 9012 3456",
+    "manualPaymentCryptoLabel": "Kripto (USDT)",
+    "manualPaymentCryptoPlaceholder": "örn. USDT (TRC20) — cüzdan adresiniz",
+    "manualPaymentsTitle": "Manuel ödeme talepleri",
+    "manualPaymentsEmpty": "Bekleyen talep yok",
+    "manualPaymentMethodBank": "Banka havalesi",
+    "manualPaymentMethodCrypto": "Kripto",
+    "manualPaymentStatusPending": "Beklemede",
+    "manualPaymentStatusApproved": "Onaylandı",
+    "manualPaymentStatusRejected": "Reddedildi",
+    "manualPaymentApprove": "Onayla ve Premium ver",
+    "manualPaymentReject": "Reddet",
+    "manualPaymentsRecent": "Son incelenenler"
   },
   "report": {
     "reportButton": "Bildir",
@@ -286,7 +313,8 @@
     "subscriptionActivated": "Premium aboneliğiniz etkinleştirildi",
     "subscriptionExpiring": "Premium aboneliğinizin süresi yakında doluyor",
     "system": "Bildirim",
-    "someone": "Biri"
+    "someone": "Biri",
+    "manualPaymentRejected": "Manuel ödeme talebiniz reddedildi — lütfen tekrar deneyin ya da başka bir yöntem kullanın."
   },
   "install": {
     "androidTitle": "Dilva'yı telefonuna kur",
