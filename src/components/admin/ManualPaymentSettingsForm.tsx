@@ -14,13 +14,16 @@ import { useTranslations } from "next-intl";
 export default function ManualPaymentSettingsForm({
   initialBankInfo,
   initialCryptoInfo,
+  initialFibInfo,
 }: {
   initialBankInfo: string | null;
   initialCryptoInfo: string | null;
+  initialFibInfo: string | null;
 }) {
   const t = useTranslations("admin");
   const [bankInfo, setBankInfo] = useState(initialBankInfo ?? "");
   const [cryptoInfo, setCryptoInfo] = useState(initialCryptoInfo ?? "");
+  const [fibInfo, setFibInfo] = useState(initialFibInfo ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(false);
@@ -35,6 +38,7 @@ export default function ManualPaymentSettingsForm({
       body: JSON.stringify({
         manualPaymentBankInfo: bankInfo,
         manualPaymentCryptoInfo: cryptoInfo,
+        manualPaymentFibInfo: fibInfo,
       }),
     });
     setSaving(false);
@@ -63,6 +67,18 @@ export default function ManualPaymentSettingsForm({
             onChange={(e) => setBankInfo(e.target.value)}
             rows={3}
             placeholder={t("manualPaymentBankPlaceholder")}
+            className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+            {t("manualPaymentFibLabel")}
+          </span>
+          <textarea
+            value={fibInfo}
+            onChange={(e) => setFibInfo(e.target.value)}
+            rows={3}
+            placeholder={t("manualPaymentFibPlaceholder")}
             className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
           />
         </label>

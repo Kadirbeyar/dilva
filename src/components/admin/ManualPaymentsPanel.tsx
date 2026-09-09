@@ -9,7 +9,7 @@ import type { SubscriptionPlan } from "@prisma/client";
 export type ManualPaymentRequestItem = {
   id: string;
   plan: SubscriptionPlan;
-  method: "BANK_TRANSFER" | "CRYPTO";
+  method: "BANK_TRANSFER" | "CRYPTO" | "FIB";
   note: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
@@ -19,6 +19,7 @@ export type ManualPaymentRequestItem = {
 const METHOD_KEY: Record<ManualPaymentRequestItem["method"], string> = {
   BANK_TRANSFER: "manualPaymentMethodBank",
   CRYPTO: "manualPaymentMethodCrypto",
+  FIB: "manualPaymentMethodFib",
 };
 
 const STATUS_KEY: Record<ManualPaymentRequestItem["status"], string> = {

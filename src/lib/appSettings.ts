@@ -13,6 +13,7 @@ export async function getAppSettings() {
     radioLabel: row?.radioLabel ?? null,
     manualPaymentBankInfo: row?.manualPaymentBankInfo ?? null,
     manualPaymentCryptoInfo: row?.manualPaymentCryptoInfo ?? null,
+    manualPaymentFibInfo: row?.manualPaymentFibInfo ?? null,
   };
 }
 
@@ -24,14 +25,15 @@ export async function setRadioSetting(radioStreamUrl: string | null, radioLabel:
   });
 }
 
-/** Admin-editable bank/Qi Card + crypto instructions shown on /premium — see prisma/sql/11_manual_payments.sql. */
+/** Admin-editable bank/Qi Card + crypto + FIB instructions shown on /premium — see prisma/sql/11_manual_payments.sql and 15_manual_payment_fib.sql. */
 export async function setManualPaymentSettings(
   manualPaymentBankInfo: string | null,
-  manualPaymentCryptoInfo: string | null
+  manualPaymentCryptoInfo: string | null,
+  manualPaymentFibInfo: string | null
 ) {
   return prisma.appSetting.upsert({
     where: { id: "singleton" },
-    update: { manualPaymentBankInfo, manualPaymentCryptoInfo },
-    create: { id: "singleton", manualPaymentBankInfo, manualPaymentCryptoInfo },
+    update: { manualPaymentBankInfo, manualPaymentCryptoInfo, manualPaymentFibInfo },
+    create: { id: "singleton", manualPaymentBankInfo, manualPaymentCryptoInfo, manualPaymentFibInfo },
   });
 }

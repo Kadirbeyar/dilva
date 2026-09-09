@@ -71,6 +71,7 @@ export default async function PremiumPage() {
         <ManualPaymentForm
           bankInfo={appSettings.manualPaymentBankInfo}
           cryptoInfo={appSettings.manualPaymentCryptoInfo}
+          fibInfo={appSettings.manualPaymentFibInfo}
           initialRequest={manualRequest}
         />
       )}

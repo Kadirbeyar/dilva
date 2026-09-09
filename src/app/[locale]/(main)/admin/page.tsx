@@ -185,6 +185,7 @@ export default async function AdminPage() {
         <ManualPaymentSettingsForm
           initialBankInfo={appSettings.manualPaymentBankInfo}
           initialCryptoInfo={appSettings.manualPaymentCryptoInfo}
+          initialFibInfo={appSettings.manualPaymentFibInfo}
         />
       </div>
 

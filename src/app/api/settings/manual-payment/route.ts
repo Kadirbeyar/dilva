@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireUser, requireAdmin, AuthError, ForbiddenError } from "@/lib/auth";
 import { getAppSettings, setManualPaymentSettings } from "@/lib/appSettings";
 
-/** Any signed-in user can read the current bank/crypto payment instructions shown on /premium. */
+/** Any signed-in user can read the current bank/crypto/FIB payment instructions shown on /premium. */
 export async function GET() {
   try {
     await requireUser();
@@ -11,6 +11,7 @@ export async function GET() {
     return NextResponse.json({
       manualPaymentBankInfo: settings.manualPaymentBankInfo,
       manualPaymentCryptoInfo: settings.manualPaymentCryptoInfo,
+      manualPaymentFibInfo: settings.manualPaymentFibInfo,
     });
   } catch (err) {
     if (err instanceof AuthError) {
@@ -24,20 +25,23 @@ export async function GET() {
 const schema = z.object({
   manualPaymentBankInfo: z.string().max(2000).optional().or(z.literal("")),
   manualPaymentCryptoInfo: z.string().max(2000).optional().or(z.literal("")),
+  manualPaymentFibInfo: z.string().max(2000).optional().or(z.literal("")),
 });
 
-/** Admin-only: change the bank/Qi Card + crypto instructions shown to everyone on /premium. */
+/** Admin-only: change the bank/Qi Card + crypto + FIB instructions shown to everyone on /premium. */
 export async function PATCH(req: Request) {
   try {
     await requireAdmin();
     const body = schema.parse(await req.json());
     const updated = await setManualPaymentSettings(
       body.manualPaymentBankInfo || null,
-      body.manualPaymentCryptoInfo || null
+      body.manualPaymentCryptoInfo || null,
+      body.manualPaymentFibInfo || null
     );
     return NextResponse.json({
       manualPaymentBankInfo: updated.manualPaymentBankInfo,
       manualPaymentCryptoInfo: updated.manualPaymentCryptoInfo,
+      manualPaymentFibInfo: updated.manualPaymentFibInfo,
     });
   } catch (err) {
     if (err instanceof AuthError) {

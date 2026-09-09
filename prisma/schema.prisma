@@ -79,6 +79,12 @@ enum PaymentStatus {
 enum ManualPaymentMethod {
   BANK_TRANSFER
   CRYPTO
+  /// FIB (First Iraqi Bank) app transfer — a very common way to send
+  /// money instantly inside Iraq, alongside the Qi Card details
+  /// already covered by BANK_TRANSFER. Kept as its own method (rather
+  /// than folded into BANK_TRANSFER's free-text info) so it shows as
+  /// its own selectable card on /premium.
+  FIB
 }
 
 enum ManualPaymentStatus {
@@ -624,6 +630,10 @@ model AppSetting {
   /// account details can change and shouldn't require a code change.
   manualPaymentBankInfo   String? @db.Text
   manualPaymentCryptoInfo String? @db.Text
+  /// FIB (First Iraqi Bank) app transfer details — phone number/name
+  /// to send to. Separate from manualPaymentBankInfo so it renders as
+  /// its own method card on /premium.
+  manualPaymentFibInfo    String? @db.Text
 
   updatedAt DateTime @updatedAt
 

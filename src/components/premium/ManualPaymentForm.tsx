@@ -7,7 +7,7 @@ import type { SubscriptionPlan } from "@prisma/client";
 
 const PLAN_ORDER: SubscriptionPlan[] = ["MONTH_1", "MONTH_3", "MONTH_6", "MONTH_12"];
 
-type Method = "BANK_TRANSFER" | "CRYPTO";
+type Method = "BANK_TRANSFER" | "CRYPTO" | "FIB";
 
 type ManualRequest = {
   id: string;
@@ -27,21 +27,25 @@ type ManualRequest = {
 export default function ManualPaymentForm({
   bankInfo,
   cryptoInfo,
+  fibInfo,
   initialRequest,
 }: {
   bankInfo: string | null;
   cryptoInfo: string | null;
+  fibInfo: string | null;
   initialRequest: ManualRequest;
 }) {
   const t = useTranslations("premium");
   const [plan, setPlan] = useState<SubscriptionPlan>("MONTH_1");
-  const [method, setMethod] = useState<Method>(bankInfo ? "BANK_TRANSFER" : "CRYPTO");
+  const [method, setMethod] = useState<Method>(
+    bankInfo ? "BANK_TRANSFER" : fibInfo ? "FIB" : "CRYPTO"
+  );
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [request, setRequest] = useState<ManualRequest>(initialRequest);
   const [error, setError] = useState(false);
 
-  if (!bankInfo && !cryptoInfo) return null;
+  if (!bankInfo && !fibInfo && !cryptoInfo) return null;
 
   if (request?.status === "PENDING") {
     return (
@@ -111,6 +115,21 @@ export default function ManualPaymentForm({
             <p className="font-semibold">{t("manualPaymentMethodBankTitle")}</p>
             <p className="mt-1 whitespace-pre-wrap text-xs text-gray-600 dark:text-gray-300">
               {bankInfo}
+            </p>
+          </button>
+        )}
+        {fibInfo && (
+          <button
+            onClick={() => setMethod("FIB")}
+            className={`flex-1 rounded-xl border p-3 text-start text-sm transition ${
+              method === "FIB"
+                ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20"
+                : "border-gray-200 dark:border-gray-700"
+            }`}
+          >
+            <p className="font-semibold">{t("manualPaymentMethodFibTitle")}</p>
+            <p className="mt-1 whitespace-pre-wrap text-xs text-gray-600 dark:text-gray-300">
+              {fibInfo}
             </p>
           </button>
         )}

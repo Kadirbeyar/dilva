@@ -24,7 +24,7 @@ export async function GET() {
 
 const schema = z.object({
   plan: z.string(),
-  method: z.enum(["BANK_TRANSFER", "CRYPTO"]),
+  method: z.enum(["BANK_TRANSFER", "CRYPTO", "FIB"]),
   note: z.string().min(3).max(500),
 });
 
