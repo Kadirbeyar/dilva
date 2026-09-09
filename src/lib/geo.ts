@@ -12,29 +12,52 @@ export type NearbyUser = {
   distanceKm: number;
 };
 
+// How far a pin can be nudged from someone's real coordinates. 600m
+// (the original value) turned out to be too small once combined with
+// the map's default max zoom: zoomed all the way in, a pin still
+// landed close enough to look like it was pointing at one specific
+// house — which is exactly the "100% exact home location" bug this
+// was supposed to prevent. 1.5km keeps someone genuinely within "the
+// same part of the city" for matching purposes without being
+// pinpoint-able, and NearbyMap.tsx additionally caps how far the map
+// can be zoomed in, as defense in depth on top of this.
+const MAX_FUZZ_METERS = 1500;
+
 /**
- * Deterministically nudges a coordinate by up to ~600m, seeded by
- * the user's own id so the offset is stable across requests (their
- * pin doesn't visibly jump every time the map reloads) while still
- * never exposing their exact real coordinates to other users —
+ * Deterministically nudges a coordinate by up to MAX_FUZZ_METERS,
+ * seeded by the user's own id so the offset is stable across requests
+ * (their pin doesn't visibly jump every time the map reloads) while
+ * still never exposing their exact real coordinates to other users —
  * `distanceKm` above is computed from the REAL coordinates in SQL
  * before this runs, so the displayed distance stays accurate even
  * though the plotted pin is fuzzed.
+ *
+ * Picks a uniformly-random point inside a disc (random angle + a
+ * sqrt-weighted radius, not a random lat/lng square) so the fuzzed
+ * pin isn't visibly biased toward the seed's original position, and
+ * corrects longitude by cos(latitude) since degrees of longitude
+ * shrink the further from the equator you are — without that
+ * correction the fuzz circle would stretch into an oval.
  */
-function seededOffset(seed: string): { dLat: number; dLng: number } {
+function seededOffset(seed: string, latitude: number): { dLat: number; dLng: number } {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = (hash << 5) - hash + seed.charCodeAt(i);
     hash |= 0;
   }
-  // Two independent pseudo-random values in [-1, 1] from one seed.
-  const r1 = (Math.sin(hash) * 10000) % 1;
-  const r2 = (Math.sin(hash * 2.17 + 1) * 10000) % 1;
-  const metersToDeg = 1 / 111_320; // ~ meters per degree latitude
-  const maxMeters = 600;
+  // Two independent pseudo-random values in [0, 1) from one seed.
+  const r1 = Math.abs(Math.sin(hash) * 43758.5453) % 1;
+  const r2 = Math.abs(Math.sin(hash * 2.17 + 1) * 12345.6789) % 1;
+
+  const angle = r1 * 2 * Math.PI;
+  const radiusMeters = MAX_FUZZ_METERS * Math.sqrt(r2);
+
+  const metersPerDegreeLat = 111_320;
+  const metersPerDegreeLng = metersPerDegreeLat * Math.cos((latitude * Math.PI) / 180);
+
   return {
-    dLat: r1 * maxMeters * metersToDeg,
-    dLng: r2 * maxMeters * metersToDeg,
+    dLat: (radiusMeters * Math.sin(angle)) / metersPerDegreeLat,
+    dLng: (radiusMeters * Math.cos(angle)) / metersPerDegreeLng,
   };
 }
 
@@ -113,7 +136,7 @@ export async function findNearbyUsers(
   return rows
     .filter((r: NearbyUser) => r.distanceKm <= radiusKm)
     .map((r: NearbyUser) => {
-      const { dLat, dLng } = seededOffset(r.id);
+      const { dLat, dLng } = seededOffset(r.id, r.latitude);
       return { ...r, latitude: r.latitude + dLat, longitude: r.longitude + dLng };
     });
 }

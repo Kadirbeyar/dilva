@@ -122,6 +122,13 @@ export default function NearbyMap({
     <MapContainer
       center={[center.lat, center.lng]}
       zoom={12}
+      // Capped well below Leaflet's default (18-19) on purpose: pins
+      // are fuzzed by up to ~1.5km (see lib/geo.ts), but at
+      // building-level zoom even a fuzzed pin can look like it's
+      // pointing at one specific house. 15 keeps the view at
+      // "neighborhood" resolution — plenty to judge who's nearby,
+      // not enough to pinpoint an address.
+      maxZoom={15}
       scrollWheelZoom
       style={{ height: "100%", width: "100%", borderRadius: "1rem" }}
     >
@@ -133,6 +140,7 @@ export default function NearbyMap({
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        maxZoom={15}
       />
       <InvalidateSizeFix />
       <Recenter lat={center.lat} lng={center.lng} />
