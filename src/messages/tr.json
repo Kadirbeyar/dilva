@@ -212,6 +212,8 @@
     "featureVisitors": "Profilini tam olarak kimin ziyaret ettiğini gör",
     "featureNearby": "Haritada yakınındaki dil partnerlerini keşfet",
     "featureAdvanced": "Gelişmiş filtreler, sınırsız çeviri ve daha fazlası",
+    "featureVerifiedBadge": "Dilva'nın her yerinde adının yanında mavi onay rozeti",
+    "verifiedBadgePreviewHint": "Adın her yerde böyle görünür — gönderiler, sohbet, profil ve daha fazlası",
     "planLabel1": "1 Ay",
     "planLabel3": "3 Ay",
     "planLabel6": "6 Ay",

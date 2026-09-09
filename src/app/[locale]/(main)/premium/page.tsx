@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAppSettings } from "@/lib/appSettings";
 import PremiumPurchaseFlow from "@/components/premium/PremiumPurchaseFlow";
 import ReferralCard from "@/components/premium/ReferralCard";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 
 export default async function PremiumPage() {
   const t = await getTranslations("premium");
@@ -44,7 +45,31 @@ export default async function PremiumPage() {
         <li className="flex items-center gap-2">
           <span className="text-brand-600">✓</span> {t("featureAdvanced")}
         </li>
+        <li className="flex items-center gap-2">
+          <span className="text-brand-600">✓</span> {t("featureVerifiedBadge")}
+        </li>
       </ul>
+
+      {/* Live preview of the exact badge a Premium subscriber gets next
+          to their name everywhere on Dilva (feed, chat, profile,
+          matches, nav…) — see components/profile/VerifiedBadge.tsx. */}
+      <div className="card-shadow mt-5 flex items-center gap-3 rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-4 dark:border-brand-900/40 dark:from-brand-900/20 dark:to-gray-800">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 text-lg font-bold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
+          {user.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            (user.displayName || user.username).slice(0, 1).toUpperCase()
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-gray-900 dark:text-white">
+            {user.displayName || user.username}
+            <VerifiedBadge size="md" />
+          </p>
+          <p className="text-xs text-gray-600 dark:text-gray-300">{t("verifiedBadgePreviewHint")}</p>
+        </div>
+      </div>
 
       {subscriptionActive && subscription?.currentPeriodEnd && (
         <div className="mt-6 rounded-xl bg-brand-50 p-4 text-sm dark:bg-brand-900/20">
