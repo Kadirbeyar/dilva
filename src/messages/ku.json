@@ -175,7 +175,7 @@
     "translate": "وەرگێڕان",
     "original": "دەقێ ڕەسەن نیشان بدە",
     "translated": "هاتییە وەرگێڕان",
-  "translateFailed": "وەرگێڕان سەرنەکەفت — دووبارە هەول بدە",
+    "translateFailed": "وەرگێڕان سەرنەکەفت — دووبارە هەول بدە",
     "noConversations": "هێشتا چاتەک نینه. هاڤاڵەکێ بدۆزە و دەست ب چاتکرنێ بکە!",
     "seen": "هاتە خواندن",
     "recordVoice": "دەنگ تۆمار بکە",
@@ -287,5 +287,28 @@
     "subscriptionExpiring": "بەشداریا تە یا پرێمیۆم نزیک دبیتە کۆتایی",
     "system": "ئاگاداری",
     "someone": "کەسەکی"
+  },
+  "install": {
+    "androidTitle": "Dilva لسەر مۆبایلا خۆ دامەزرینه",
+    "androidDesc": "ب یەک دوگمەیی Dilva وەکی appەکی راستەقینه بخه سەر Home Screen ya خۆ — بێ Play Store.",
+    "androidInstallButton": "دامەزراندنا Appê",
+    "installing": "دامەزراندن دبیت...",
+    "androidFallbackTitle": "دا خۆت دامەزرینی:",
+    "androidFallbackStep1": "ل سەرێ راستێ ⋮ (سێ خالان) کلیک بکه.",
+    "androidFallbackStep2": "\"Add to Home screen\" یان \"دامەزراندنا Appê\" هەلبژێره.",
+    "androidFallbackStep3": "دوگمەیا \"Add\"/\"دامەزراندن\" پشتراست بکه.",
+    "iosTitle": "Dilva لسەر iPhone خۆ دامەزرینه",
+    "iosDesc": "ب ڤان سێ گاڤان Dilva دبیته appەکی راستەقینه لسەر Home Screen ya تە.",
+    "iosStep1": "ل ژێرێ لاپەرێ، دوگمەیا هاڤبەشکرنێ (Share — چوارگۆشێ ب تیرەکا سەرێ) کلیک بکه.",
+    "iosStep2": "خوارێ بگەڕه و \"Add to Home Screen\" هەلبژێره.",
+    "iosStep3": "ل سەرێ راستێ \"Add\" کلیک بکه — Dilva ئێکسەر لسەر Home Screen ya تە دیار دبیت.",
+    "desktopTitle": "ڤێ لینکێ لسەر مۆبایلا خۆ ڤەکه",
+    "desktopDesc": "دامەزراندن تنێ لسەر مۆبایل (iPhone یان Android) دشێت بێت کرن. ڤێ لینکێ کوپی بکه و بو مۆبایلا خۆ بنێره.",
+    "copyLinkButton": "کوپیکرنا لینکێ",
+    "linkCopied": "لینک هاته کوپیکرن ✓",
+    "alreadyInstalledTitle": "Dilva ئێکسەر دامەزراندییه",
+    "alreadyInstalledDesc": "appa Dilva یا لسەر ئامێرێ تە هەیه — ئێکسەر ژێ بکەڤه ژوور.",
+    "openButton": "ڤەکرنا Dilva",
+    "backToSite": "زڤڕینا بو ماڵپەڕی"
   }
 }

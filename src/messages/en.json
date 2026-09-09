@@ -175,7 +175,7 @@
     "translate": "Translate",
     "original": "Show original",
     "translated": "Translated",
-  "translateFailed": "Translation failed — try again",
+    "translateFailed": "Translation failed — try again",
     "noConversations": "No conversations yet. Find a partner to start chatting!",
     "seen": "Seen",
     "recordVoice": "Record a voice message",
@@ -287,5 +287,28 @@
     "subscriptionExpiring": "Your Premium subscription is expiring soon",
     "system": "Notification",
     "someone": "Someone"
+  },
+  "install": {
+    "androidTitle": "Install Dilva on your phone",
+    "androidDesc": "One tap adds Dilva to your Home Screen as a real app — no Play Store needed.",
+    "androidInstallButton": "Install App",
+    "installing": "Installing...",
+    "androidFallbackTitle": "To install it yourself:",
+    "androidFallbackStep1": "Tap the ⋮ menu in the top right of your browser.",
+    "androidFallbackStep2": "Choose \"Add to Home screen\" or \"Install app\".",
+    "androidFallbackStep3": "Confirm by tapping \"Add\" / \"Install\".",
+    "iosTitle": "Install Dilva on your iPhone",
+    "iosDesc": "Three quick steps and Dilva becomes a real app on your Home Screen.",
+    "iosStep1": "Tap the Share button at the bottom of the screen (square with an arrow up).",
+    "iosStep2": "Scroll down and choose \"Add to Home Screen\".",
+    "iosStep3": "Tap \"Add\" in the top right — Dilva now appears on your Home Screen.",
+    "desktopTitle": "Open this link on your phone",
+    "desktopDesc": "Installing only works on a phone (iPhone or Android). Copy this link and send it to your phone.",
+    "copyLinkButton": "Copy Link",
+    "linkCopied": "Link copied ✓",
+    "alreadyInstalledTitle": "Dilva is already installed",
+    "alreadyInstalledDesc": "You already have the Dilva app on this device — just open it.",
+    "openButton": "Open Dilva",
+    "backToSite": "Back to the website"
   }
 }

@@ -175,7 +175,7 @@
     "translate": "Çevir",
     "original": "Orijinali göster",
     "translated": "Çevrildi",
-  "translateFailed": "Çeviri başarısız — tekrar dene",
+    "translateFailed": "Çeviri başarısız — tekrar dene",
     "noConversations": "Henüz sohbetin yok. Bir partner bul ve sohbete başla!",
     "seen": "Görüldü",
     "recordVoice": "Sesli mesaj kaydet",
@@ -287,5 +287,28 @@
     "subscriptionExpiring": "Premium aboneliğinizin süresi yakında doluyor",
     "system": "Bildirim",
     "someone": "Biri"
+  },
+  "install": {
+    "androidTitle": "Dilva'yı telefonuna kur",
+    "androidDesc": "Tek dokunuşla Dilva'yı gerçek bir uygulama gibi Ana Ekrana ekle — Play Store gerekmez.",
+    "androidInstallButton": "Uygulamayı Kur",
+    "installing": "Kuruluyor...",
+    "androidFallbackTitle": "Kendin kurmak için:",
+    "androidFallbackStep1": "Tarayıcının sağ üstündeki ⋮ menüsüne dokun.",
+    "androidFallbackStep2": "\"Ana ekrana ekle\" ya da \"Uygulamayı yükle\" seçeneğini seç.",
+    "androidFallbackStep3": "\"Ekle\" / \"Yükle\" diyerek onayla.",
+    "iosTitle": "Dilva'yı iPhone'una kur",
+    "iosDesc": "Üç kısa adımla Dilva, Ana Ekranında gerçek bir uygulama olur.",
+    "iosStep1": "Ekranın altındaki Paylaş düğmesine dokun (yukarı oklu kare).",
+    "iosStep2": "Aşağı kaydır ve \"Ana Ekrana Ekle\"yi seç.",
+    "iosStep3": "Sağ üstten \"Ekle\"ye dokun — Dilva artık Ana Ekranında.",
+    "desktopTitle": "Bu bağlantıyı telefonunda aç",
+    "desktopDesc": "Kurulum yalnızca telefonda (iPhone veya Android) çalışır. Bu bağlantıyı kopyala ve telefonuna gönder.",
+    "copyLinkButton": "Bağlantıyı Kopyala",
+    "linkCopied": "Bağlantı kopyalandı ✓",
+    "alreadyInstalledTitle": "Dilva zaten kurulu",
+    "alreadyInstalledDesc": "Bu cihazda Dilva uygulaması zaten var — sadece aç.",
+    "openButton": "Dilva'yı Aç",
+    "backToSite": "Web sitesine dön"
   }
 }
