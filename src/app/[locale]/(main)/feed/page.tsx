@@ -22,12 +22,23 @@ export default function FeedPage() {
   }
 
   useEffect(() => {
-    // Sequential, not parallel: Dilva's DB connection has connection_limit=1.
+    // Parallel here is fine — unlike Prisma calls WITHIN one request
+    // (which share a single connection_limit=1 client and must stay
+    // sequential), these are two separate browser fetches to two
+    // separate route handlers/invocations, each with its own
+    // short-lived connection. Awaiting /api/profile/me before even
+    // starting /api/posts was a pure client-side waterfall that
+    // doubled the round-trip time for zero benefit — posts don't need
+    // the profile response for anything but the (UI-only) currentUserId.
     (async () => {
-      const meRes = await fetch("/api/profile/me");
+      const [meRes, postsRes] = await Promise.all([
+        fetch("/api/profile/me"),
+        fetch("/api/posts"),
+      ]);
       const meData = await meRes.json();
+      const postsData = await postsRes.json();
       setCurrentUserId(meData.profile?.id ?? null);
-      await loadPosts();
+      setPosts(postsData.posts ?? []);
     })();
   }, []);
 

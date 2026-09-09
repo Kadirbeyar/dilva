@@ -32,39 +32,19 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 1, delayMs = 400): P
  * Retry once, same as withRetry() below for the profile lookup, and
  * only treat it as genuinely signed out when Supabase confirms there's
  * no session.
+ *
+ * (This used to also call getSession() first and log every attempt as
+ * a diagnostic while tracking down a "valid cookie reported as no
+ * session" bug — that's resolved now, and both were pure overhead:
+ * getSession() added nothing getUser() doesn't already tell us, and on
+ * every retry the extra round trip to ap-northeast-2 was adding real,
+ * user-visible latency to every single authenticated request.)
  */
 async function getAuthUser(
   supabase: Awaited<ReturnType<typeof createClient>>
 ): Promise<{ id: string } | null> {
-  // Temporary diagnostic: getSession() reads the cookie locally with no
-  // network call, so this tells us whether the storage/cookie-parsing
-  // layer finds a session at all, independent of anything network- or
-  // Supabase-API-related.
-  const sessionCheck = await supabase.auth.getSession();
-  console.log(
-    "[auth] getSession() ->",
-    sessionCheck.data.session ? `found, expires_at=${sessionCheck.data.session.expires_at}` : "null",
-    sessionCheck.error ? `error=${sessionCheck.error.name}:${sessionCheck.error.message}` : ""
-  );
-
   for (let attempt = 0; attempt <= 1; attempt++) {
     const { data, error } = await supabase.auth.getUser();
-    // Temporary diagnostic: log every error (including
-    // AuthSessionMissingError, normally treated as "genuinely signed
-    // out" and NOT logged) so we can see exactly what Supabase says
-    // even in that case, while we track down why a cookie that is
-    // definitely present and definitely valid is being reported as
-    // "no session".
-    if (error) {
-      console.log(
-        `[auth] getUser() attempt ${attempt + 1}/2 ->`,
-        error.name,
-        error.message,
-        "status" in error ? (error as any).status : undefined
-      );
-    } else {
-      console.log(`[auth] getUser() attempt ${attempt + 1}/2 -> ok, user=${data.user?.id}`);
-    }
     if (!error || error.name === "AuthSessionMissingError") {
       return data.user;
     }

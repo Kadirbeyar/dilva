@@ -28,14 +28,35 @@ function stripLocale(pathname: string): string {
   return pathname;
 }
 
+// Purely public, auth-independent pages — confirmed none of these read
+// session state server-side, none are in PROTECTED_PATHS, and all are
+// exempt from the onboarding redirect below. For these, and ONLY these,
+// the middleware skips the Supabase auth check entirely (see the early
+// return in middleware()) rather than unconditionally calling
+// supabase.auth.getUser() on every single request.
+//
+// getUser() makes a real network round-trip to Supabase's Auth API
+// (that's what lets it also refresh an expiring session, which is why
+// protected/onboarding-aware pages still need it) — running that on
+// EVERY navigation, including the plain landing page, was adding
+// noticeable latency across the whole site, not just DB-heavy pages.
+const PUBLIC_NO_AUTH_PATHS = ["/", "/terms", "/privacy", "/login", "/signup", "/install"];
+
 export async function middleware(request: NextRequest) {
   // 1. Run next-intl's locale detection/redirect first.
   const intlResponse = intlMiddleware(request);
+  const response = intlResponse ?? NextResponse.next();
+
+  const cleanPath = stripLocale(request.nextUrl.pathname);
+  const isPublicNoAuth = PUBLIC_NO_AUTH_PATHS.some(
+    (p) => cleanPath === p || cleanPath.startsWith(p + "/")
+  );
+  if (isPublicNoAuth) {
+    return response;
+  }
 
   // 2. Refresh the Supabase session (this is what lets server
   //    components read a valid session via cookies).
-  const response = intlResponse ?? NextResponse.next();
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -79,7 +100,6 @@ export async function middleware(request: NextRequest) {
     authNetworkError = true;
   }
 
-  const cleanPath = stripLocale(request.nextUrl.pathname);
   const requiresAuth = PROTECTED_PATHS.some(
     (p) => cleanPath === p || cleanPath.startsWith(p + "/")
   );
