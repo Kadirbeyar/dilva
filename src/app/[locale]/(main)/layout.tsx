@@ -21,6 +21,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
                   displayName: user.displayName,
                   avatarUrl: user.avatarUrl,
                   isAdmin: user.isAdmin,
+                  isPremiumCached: user.isPremiumCached,
                 }
               : null
           }

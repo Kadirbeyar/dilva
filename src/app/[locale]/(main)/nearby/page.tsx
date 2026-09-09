@@ -17,6 +17,7 @@ type NearbyUser = {
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  isPremiumCached?: boolean;
   latitude: number;
   longitude: number;
   distanceKm: number;

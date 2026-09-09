@@ -15,7 +15,9 @@ export async function GET(
     where: { postId },
     orderBy: { createdAt: "asc" },
     include: {
-      author: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
+      author: {
+        select: { id: true, username: true, displayName: true, avatarUrl: true, isPremiumCached: true },
+      },
     },
   });
   return NextResponse.json({ comments });
@@ -37,7 +39,9 @@ export async function POST(
     const comment = await prisma.comment.create({
       data: { postId, authorId: user.id, content },
       include: {
-        author: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
+        author: {
+        select: { id: true, username: true, displayName: true, avatarUrl: true, isPremiumCached: true },
+      },
       },
     });
 

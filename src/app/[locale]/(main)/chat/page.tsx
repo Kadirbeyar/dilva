@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computeIsOnline } from "@/lib/presence";
 import PremiumCrown from "@/components/profile/PremiumCrown";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 
 function relativeTime(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -75,7 +76,10 @@ export default async function ChatListPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="truncate font-semibold">{other?.displayName || other?.username}</p>
+                      <p className="truncate font-semibold">
+                        {other?.displayName || other?.username}
+                        {other?.isPremiumCached && <VerifiedBadge size="sm" />}
+                      </p>
                       {last && (
                         <span className="shrink-0 text-[11px] text-gray-400 dark:text-gray-500">
                           {relativeTime(last.createdAt.toISOString())}

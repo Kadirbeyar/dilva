@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 
 type Visitor = {
   id: string;
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  isPremiumCached?: boolean;
   visitedAt: string;
 };
 
@@ -79,7 +81,10 @@ export default function VisitorsPage() {
                   )}
                 </div>
                 <div>
-                  <p className="font-medium">{v.displayName || v.username}</p>
+                  <p className="font-medium">
+                    {v.displayName || v.username}
+                    {v.isPremiumCached && <VerifiedBadge size="sm" />}
+                  </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(v.visitedAt).toLocaleString()}</p>
                 </div>
               </motion.li>

@@ -10,6 +10,7 @@ import FollowButton from "@/components/profile/FollowButton";
 import WaveButton from "@/components/profile/WaveButton";
 import PostCard, { type FeedPost } from "@/components/feed/PostCard";
 import PremiumCrown from "@/components/profile/PremiumCrown";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 import { getActivityStreak } from "@/lib/streak";
 
 export default async function PublicProfilePage({
@@ -82,7 +83,10 @@ export default async function PublicProfilePage({
             {profile.isPremiumCached && <PremiumCrown size="lg" />}
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{profile.displayName || profile.username}</h1>
+            <h1 className="text-2xl font-bold">
+              {profile.displayName || profile.username}
+              {profile.isPremiumCached && <VerifiedBadge size="lg" />}
+            </h1>
             <p className="text-gray-500 dark:text-gray-400">
               @{profile.username}
               {profile.birthDate && (

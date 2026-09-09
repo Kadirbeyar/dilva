@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import PremiumCrown from "@/components/profile/PremiumCrown";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 import { withinPostEditWindow } from "@/lib/postEditWindow";
 
 export type FeedPost = {
@@ -28,7 +29,13 @@ type Comment = {
   id: string;
   content: string;
   createdAt: string;
-  author: { id: string; username: string; displayName: string | null; avatarUrl: string | null };
+  author: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    isPremiumCached?: boolean;
+  };
 };
 
 const REPORT_REASONS = ["SEXUAL_CONTENT", "SPAM", "HARASSMENT", "OTHER"] as const;
@@ -217,7 +224,10 @@ export default function PostCard({
           {post.author.isPremiumCached && <PremiumCrown />}
         </div>
         <div>
-          <p className="font-semibold">{post.author.displayName || post.author.username}</p>
+          <p className="font-semibold">
+            {post.author.displayName || post.author.username}
+            {post.author.isPremiumCached && <VerifiedBadge />}
+          </p>
           {post.language && (
             <p className="text-xs text-gray-500 dark:text-gray-400">{post.language.nativeName}</p>
           )}
@@ -449,7 +459,10 @@ export default function PostCard({
                       </div>
                       <div className="min-w-0 flex-1 rounded-2xl bg-gray-100 px-3 py-2 dark:bg-gray-900">
                         <p className="text-sm">
-                          <span className="font-bold">{c.author.displayName || c.author.username}</span>
+                          <span className="font-bold">
+                            {c.author.displayName || c.author.username}
+                            {c.author.isPremiumCached && <VerifiedBadge size="sm" />}
+                          </span>
                         </p>
                         <p className="text-sm text-gray-800 dark:text-gray-100">{c.content}</p>
                       </div>

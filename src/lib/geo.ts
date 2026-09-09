@@ -5,6 +5,7 @@ export type NearbyUser = {
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  isPremiumCached: boolean;
   latitude: number;
   longitude: number;
   city: string | null;
@@ -110,6 +111,7 @@ export async function findNearbyUsers(
       "username",
       "displayName",
       "avatarUrl",
+      "isPremiumCached",
       "latitude",
       "longitude",
       "city",

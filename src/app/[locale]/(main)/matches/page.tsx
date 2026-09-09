@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import LanguageFlag from "@/components/shared/LanguageFlag";
 import PremiumCrown from "@/components/profile/PremiumCrown";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 import { flagEmoji } from "@/lib/languageFlags";
 import { calculateAge } from "@/lib/age";
 import { WORLD_COUNTRIES } from "@/lib/countries";
@@ -446,6 +447,7 @@ export default function MatchesPage() {
                   <div>
                     <p className="font-semibold">
                       {user.displayName || user.username}
+                      {user.isPremium && <VerifiedBadge size="sm" />}
                       {user.birthDate && (
                         <span className="ms-1.5 font-normal text-gray-500 dark:text-gray-400">
                           · {tProfile("yearsOld", { age: calculateAge(user.birthDate) })}

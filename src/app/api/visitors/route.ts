@@ -82,7 +82,13 @@ export async function GET() {
       take: 100,
       include: {
         visitor: {
-          select: { id: true, username: true, displayName: true, avatarUrl: true },
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            isPremiumCached: true,
+          },
         },
       },
     });

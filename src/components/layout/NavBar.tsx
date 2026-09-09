@@ -9,6 +9,7 @@ import SignOutButton from "@/components/layout/SignOutButton";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import NotificationBell from "@/components/layout/NotificationBell";
 import StreakBadge from "@/components/layout/StreakBadge";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 import { useNavBadges } from "@/components/layout/NavBadgeProvider";
 
 /** Small red count pill shown on a nav link with unread activity. */
@@ -26,6 +27,7 @@ type NavUser = {
   displayName: string | null;
   avatarUrl: string | null;
   isAdmin?: boolean;
+  isPremiumCached?: boolean;
 } | null;
 
 export default function NavBar({ user }: { user: NavUser }) {
@@ -92,7 +94,10 @@ export default function NavBar({ user }: { user: NavUser }) {
                   <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
                 )}
               </span>
-              <span className="text-sm font-medium">{user.displayName || user.username}</span>
+              <span className="text-sm font-medium">
+                {user.displayName || user.username}
+                {user.isPremiumCached && <VerifiedBadge size="sm" />}
+              </span>
             </Link>
           )}
           {user && user.isAdmin && (

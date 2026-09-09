@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import PremiumCrown from "@/components/profile/PremiumCrown";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 
 type ChatMessage = {
   id: string;
@@ -398,7 +399,10 @@ export default function ChatWindow({
               {otherUser.isPremiumCached && <PremiumCrown />}
             </div>
             <div className="min-w-0">
-              <p className="truncate font-semibold leading-tight">{otherUser.displayName || otherUser.username}</p>
+              <p className="truncate font-semibold leading-tight">
+                {otherUser.displayName || otherUser.username}
+                {otherUser.isPremiumCached && <VerifiedBadge size="sm" />}
+              </p>
               {otherUser.isOnline && (
                 <p className="flex items-center gap-1 text-[11px] font-medium text-green-600 dark:text-green-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> {t("onlineNow")}

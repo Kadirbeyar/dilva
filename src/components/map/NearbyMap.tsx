@@ -8,12 +8,14 @@ import "leaflet/dist/leaflet.css";
 // react-leaflet-cluster bundles and imports its own copy of the
 // leaflet.markercluster CSS internally — no separate import needed.
 import { Link } from "@/i18n/navigation";
+import VerifiedBadge from "@/components/profile/VerifiedBadge";
 
 export type NearbyUser = {
   id: string;
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  isPremiumCached?: boolean;
   latitude: number;
   longitude: number;
   distanceKm: number;
@@ -172,7 +174,10 @@ export default function NearbyMap({
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="truncate font-semibold">{u.displayName || u.username}</p>
+                  <p className="truncate font-semibold">
+                    {u.displayName || u.username}
+                    {u.isPremiumCached && <VerifiedBadge size="sm" />}
+                  </p>
                   <p className="text-xs text-gray-500">{u.distanceKm.toFixed(1)} km</p>
                 </div>
               </Link>
