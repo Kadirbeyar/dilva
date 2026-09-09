@@ -117,6 +117,12 @@
     "locationUseDetected": "{country} kullan",
     "locationDenied": "Konum erişimi reddedildi veya başarısız oldu. Hesap oluşturmak için izin vermelisin — lütfen tekrar dene.",
     "locationRequiredError": "Konum erişimine izin vermeli ve bu, seçtiğin ülkeyle eşleşmelidir",
+    "notificationTitle": "Bildirimleri etkinleştir",
+    "notificationRequiredNote": "Hiçbir mesajı veya güncellemeyi kaçırmaman için bildirimlere izin vermelisin — özellikle Dilva'yı ana ekrana eklediğinde önemlidir. Bu olmadan hesap oluşturulamaz.",
+    "notificationButton": "Bildirimlere izin ver",
+    "notificationConfirmed": "Bildirimler etkinleştirildi",
+    "notificationDenied": "Bildirim erişimi reddedildi, başarısız oldu veya bu tarayıcı tarafından desteklenmiyor. Hesap oluşturmak için izin vermelisin — lütfen tekrar dene.",
+    "notificationRequiredError": "Bildirimlere izin vermelisin",
     "countryLockedHint": "Ülke değiştirilemez — kayıt olurken gerçek GPS konumunla doğrulandı."
   },
   "feed": {

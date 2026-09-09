@@ -42,6 +42,15 @@ function stripLocale(pathname: string): string {
 // noticeable latency across the whole site, not just DB-heavy pages.
 const PUBLIC_NO_AUTH_PATHS = ["/", "/terms", "/privacy", "/login", "/signup", "/install"];
 
+// Keep in sync with lib/supabase/client.ts and lib/supabase/server.ts —
+// without an explicit maxAge, @supabase/ssr's auth cookie has no
+// expiry of its own and some browsers drop it as soon as the
+// app/browser closes, forcing a fresh login every time. 400 days is
+// Chrome's own cap on cookie lifetime. The middleware is what actually
+// re-writes this cookie on almost every request (see step 2 below), so
+// this is the setting that matters most for "stay signed in".
+const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 400;
+
 export async function middleware(request: NextRequest) {
   // 1. Run next-intl's locale detection/redirect first.
   const intlResponse = intlMiddleware(request);
@@ -61,6 +70,7 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: { maxAge: AUTH_COOKIE_MAX_AGE },
       cookies: {
         getAll() {
           return request.cookies.getAll();

@@ -117,6 +117,12 @@
     "locationUseDetected": "Use {country}",
     "locationDenied": "Location access was denied or failed. You must allow it to create an account — please try again.",
     "locationRequiredError": "You must allow location access and it must match your selected country",
+    "notificationTitle": "Enable notifications",
+    "notificationRequiredNote": "You must allow notifications so you never miss a message or update — especially important once you add Dilva to your home screen. Your account cannot be created without this.",
+    "notificationButton": "Allow notifications",
+    "notificationConfirmed": "Notifications enabled",
+    "notificationDenied": "Notification access was denied, failed, or isn't supported by this browser. You must allow it to create an account — please try again.",
+    "notificationRequiredError": "You must allow notifications",
     "countryLockedHint": "Country can't be changed — it was verified against your real GPS location when you signed up."
   },
   "feed": {

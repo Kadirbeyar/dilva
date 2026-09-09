@@ -11,6 +11,7 @@ import { MIN_SIGNUP_AGE } from "@/lib/age";
 import { WORLD_COUNTRIES } from "@/lib/countries";
 import { countriesMatch, resolveToWorldCountry } from "@/lib/countryMatch";
 import { getStoredReferralCode, clearStoredReferralCode } from "@/lib/referralCapture";
+import { isPushSupported, subscribeToPush } from "@/lib/pushClient";
 
 type Language = { code: string; name: string; nativeName: string };
 type TargetRow = { code: string; proficiency: string };
@@ -56,6 +57,25 @@ export default function OnboardingPage() {
   >("idle");
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Mandatory notification opt-in, mirroring the location block above:
+  // once a Dilva account is added to the phone's home screen, push
+  // notifications are the only way a user finds out about a new
+  // message/like/match without having the app open, so it's enforced
+  // here rather than left as a skippable settings toggle.
+  const [notificationStatus, setNotificationStatus] = useState<
+    "idle" | "checking" | "granted" | "denied" | "unsupported"
+  >("idle");
+
+  async function requestNotifications() {
+    setNotificationStatus("checking");
+    if (!isPushSupported()) {
+      setNotificationStatus("unsupported");
+      return;
+    }
+    const ok = await subscribeToPush();
+    setNotificationStatus(ok ? "granted" : "denied");
+  }
 
   // Re-evaluate match/mismatch if the user changes the country
   // dropdown after we already have a detected location (e.g. they
@@ -139,6 +159,10 @@ export default function OnboardingPage() {
     }
     if (locationStatus !== "match") {
       setError(t("locationRequiredError"));
+      return;
+    }
+    if (notificationStatus !== "granted") {
+      setError(t("notificationRequiredError"));
       return;
     }
 
@@ -320,6 +344,42 @@ export default function OnboardingPage() {
             )}
           </div>
 
+          <div
+            className={`rounded-xl border p-3.5 ${
+              notificationStatus === "granted"
+                ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20"
+                : notificationStatus === "denied" || notificationStatus === "unsupported"
+                  ? "border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
+                  : "border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-900"
+            }`}
+          >
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{t("notificationTitle")}</p>
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{t("notificationRequiredNote")}</p>
+
+            {notificationStatus === "granted" && (
+              <p className="mt-2 text-sm font-medium text-green-700 dark:text-green-400">
+                ✓ {t("notificationConfirmed")}
+              </p>
+            )}
+
+            {(notificationStatus === "denied" || notificationStatus === "unsupported") && (
+              <p className="mt-2 text-sm text-red-700 dark:text-red-400">{t("notificationDenied")}</p>
+            )}
+
+            {notificationStatus !== "granted" && (
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={requestNotifications}
+                disabled={notificationStatus === "checking"}
+                className="mt-2.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-50"
+              >
+                {notificationStatus === "checking" ? tc("loading") : t("notificationButton")}
+              </motion.button>
+            )}
+          </div>
+
           <label className="flex flex-col gap-1">
             <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{t("bioLabel")}</span>
             <textarea
@@ -427,7 +487,7 @@ export default function OnboardingPage() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            disabled={submitting || locationStatus !== "match"}
+            disabled={submitting || locationStatus !== "match" || notificationStatus !== "granted"}
             className="mt-2 rounded-full bg-brand-600 px-4 py-3 font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700 disabled:opacity-50"
           >
             {submitting ? tc("loading") : t("finish")}

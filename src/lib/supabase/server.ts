@@ -1,6 +1,14 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+// Keep in sync with lib/supabase/client.ts's AUTH_COOKIE_MAX_AGE —
+// same reasoning: without this, the auth cookie has no expiry of its
+// own and some browsers drop it as soon as the app/browser is closed,
+// forcing a fresh login. 400 days is Chrome's own cap on cookie
+// lifetime and matches Supabase's recommendation for "stay signed in
+// until I log out".
+const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 400;
+
 /**
  * Supabase client for use in Server Components, Route Handlers and
  * Server Actions. Must be created fresh per-request (cookies() is
@@ -13,6 +21,7 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: { maxAge: AUTH_COOKIE_MAX_AGE },
       cookies: {
         getAll() {
           return cookieStore.getAll();
