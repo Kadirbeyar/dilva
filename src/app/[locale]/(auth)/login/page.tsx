@@ -5,14 +5,12 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const t = useTranslations("auth");
   const tc = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,9 +21,17 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    // Goes through /api/auth/login (a server route) rather than calling
+    // supabase.auth.signInWithPassword directly from the browser, so the
+    // session cookie is set via a real Set-Cookie header — see that
+    // route's comment for why this matters on iOS.
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
     setLoading(false);
-    if (signInError) {
+    if (!res.ok) {
       setError(t("signInError"));
       return;
     }

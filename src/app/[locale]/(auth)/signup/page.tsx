@@ -4,14 +4,12 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { captureReferralFromUrl } from "@/lib/referralCapture";
 
 export default function SignUpPage() {
   const t = useTranslations("auth");
   const tc = useTranslations("common");
   const router = useRouter();
-  const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,17 +34,21 @@ export default function SignUpPage() {
     }
 
     setLoading(true);
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/onboarding`,
-      },
+    // Goes through /api/auth/signup (a server route) rather than calling
+    // supabase.auth.signUp directly from the browser, so a session
+    // issued immediately (when email confirmation is disabled) is set
+    // via a real Set-Cookie header — see that route's comment for why
+    // this matters on iOS.
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, origin: window.location.origin }),
     });
+    const data = await res.json().catch(() => ({}));
     setLoading(false);
 
-    if (signUpError) {
-      setError(signUpError.message);
+    if (!res.ok) {
+      setError(data.error || t("signInError"));
       return;
     }
 
