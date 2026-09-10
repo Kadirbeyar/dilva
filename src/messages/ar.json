@@ -243,6 +243,8 @@
     "manualPaymentNotePlaceholder": "مثال: أُرسلت من أحمد علي، آخر 4 أرقام 4521",
     "manualPaymentSubmit": "لقد أرسلتها — تأكيد",
     "manualPaymentError": "حدث خطأ ما، الرجاء المحاولة مرة أخرى.",
+    "manualPaymentWhatsappNote": "لا يمكنك الدفع بأي من هذه الطرق؟",
+    "manualPaymentWhatsappButton": "تواصل معنا عبر واتساب",
     "closeModal": "إغلاق",
     "referralTitle": "ادعُ أصدقاءك، واحصل على Premium مجاناً",
     "referralSubtitle": "شارك رابطك — عندما يسجّل صديق باستخدامه، يحصل كلاكما على {days} يوماً من Premium مجاناً.",

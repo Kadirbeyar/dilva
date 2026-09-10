@@ -204,6 +204,26 @@ export default function ManualPaymentForm({
       {error && (
         <p className="mt-2 text-xs text-red-600 dark:text-red-400">{t("manualPaymentError")}</p>
       )}
+
+      {/* Fallback for users who can't complete any of the methods above
+          (unsupported bank, no crypto wallet, etc.) — a direct link to
+          the owner's personal WhatsApp so they can arrange payment
+          another way instead of getting stuck. Number is Dilva's
+          support WhatsApp: +964 751 231 9556 (Iraq). */}
+      <div className="mt-5 border-t border-gray-100 pt-4 text-center dark:border-gray-700">
+        <p className="text-xs text-gray-500 dark:text-gray-400">{t("manualPaymentWhatsappNote")}</p>
+        <a
+          href="https://wa.me/9647512319556"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1ebe57]"
+        >
+          <svg viewBox="0 0 32 32" className="h-4 w-4 fill-current" aria-hidden="true">
+            <path d="M16.004 3C9.377 3 4 8.373 4 15c0 2.34.673 4.523 1.836 6.37L4 29l7.82-1.79A11.94 11.94 0 0 0 16.004 27C22.63 27 28 21.627 28 15S22.63 3 16.004 3Zm0 21.7c-1.91 0-3.69-.53-5.21-1.45l-.373-.222-4.64 1.062 1.09-4.52-.243-.39A9.66 9.66 0 0 1 5.3 15c0-5.906 4.798-10.7 10.704-10.7 5.906 0 10.7 4.794 10.7 10.7 0 5.906-4.794 10.7-10.7 10.7Zm5.87-8.014c-.32-.16-1.9-.938-2.194-1.045-.294-.107-.508-.16-.722.16-.213.32-.828 1.045-1.016 1.26-.187.213-.374.24-.694.08-.32-.16-1.35-.498-2.572-1.588-.95-.848-1.592-1.895-1.78-2.215-.187-.32-.02-.493.14-.653.144-.143.32-.373.48-.56.16-.187.213-.32.32-.534.107-.213.053-.4-.027-.56-.08-.16-.722-1.74-.99-2.383-.26-.626-.526-.541-.722-.55-.187-.008-.4-.01-.614-.01-.213 0-.56.08-.854.4-.294.32-1.12 1.095-1.12 2.67 0 1.574 1.147 3.096 1.307 3.31.16.213 2.257 3.448 5.468 4.834.764.33 1.36.527 1.826.674.767.244 1.465.21 2.017.128.615-.092 1.9-.777 2.167-1.527.267-.75.267-1.393.187-1.527-.08-.133-.294-.213-.614-.373Z" />
+          </svg>
+          {t("manualPaymentWhatsappButton")}
+        </a>
+      </div>
     </div>
   );
 }

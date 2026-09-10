@@ -243,6 +243,8 @@
     "manualPaymentNotePlaceholder": "بۆ نموونە: لەلایەن ئەحمەد عەلییەوە نێردراوە، دوا ٤ ژمارە 4521",
     "manualPaymentSubmit": "ناردمە — پشتڕاستی بکەرەوە",
     "manualPaymentError": "شتێک هەڵەی ڕوویدا، تکایە دووبارە هەوڵبدەرەوە.",
+    "manualPaymentWhatsappNote": "نەتوانیت بە هیچ یەکێک لەم شێوازانە پارە بدەیت؟",
+    "manualPaymentWhatsappButton": "پەیوەندیمان پێوە بکە لە واتساپ",
     "closeModal": "داخستن",
     "referralTitle": "هاوڕێکانت بانگهێشت بکە، Premium بەخۆڕایی وەربگرە",
     "referralSubtitle": "لینکەکەت هاوبەش بکە — کاتێک هاوڕێیەک پێی خۆی تۆمار بکات، هەردووکتان {days} ڕۆژ Premium ی بەخۆڕایی وەردەگرن.",
