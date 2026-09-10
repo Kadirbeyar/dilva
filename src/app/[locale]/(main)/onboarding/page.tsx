@@ -161,7 +161,7 @@ export default function OnboardingPage() {
       setError(t("locationRequiredError"));
       return;
     }
-    if (notificationStatus !== "granted") {
+    if (notificationStatus !== "granted" && notificationStatus !== "unsupported") {
       setError(t("notificationRequiredError"));
       return;
     }
@@ -348,9 +348,11 @@ export default function OnboardingPage() {
             className={`rounded-xl border p-3.5 ${
               notificationStatus === "granted"
                 ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20"
-                : notificationStatus === "denied" || notificationStatus === "unsupported"
+                : notificationStatus === "denied"
                   ? "border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
-                  : "border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-900"
+                  : notificationStatus === "unsupported"
+                    ? "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20"
+                    : "border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-900"
             }`}
           >
             <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{t("notificationTitle")}</p>
@@ -362,11 +364,23 @@ export default function OnboardingPage() {
               </p>
             )}
 
-            {(notificationStatus === "denied" || notificationStatus === "unsupported") && (
+            {notificationStatus === "denied" && (
               <p className="mt-2 text-sm text-red-700 dark:text-red-400">{t("notificationDenied")}</p>
             )}
 
-            {notificationStatus !== "granted" && (
+            {/* Some browsers/devices genuinely cannot show a permission
+                prompt at all — most notably iPhone Safari when Dilva
+                hasn't been added to the Home Screen yet, where the Push
+                API doesn't exist in a regular browser tab. There is no
+                dialog to trigger and no button that would ever fix
+                this, so — unlike an actual "denied" answer — this must
+                NOT block account creation, or every such visitor would
+                be permanently stuck on this screen. */}
+            {notificationStatus === "unsupported" && (
+              <p className="mt-2 text-sm text-blue-700 dark:text-blue-400">{t("notificationUnsupportedNote")}</p>
+            )}
+
+            {(notificationStatus === "idle" || notificationStatus === "checking" || notificationStatus === "denied") && (
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.02 }}
@@ -487,7 +501,11 @@ export default function OnboardingPage() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            disabled={submitting || locationStatus !== "match" || notificationStatus !== "granted"}
+            disabled={
+              submitting ||
+              locationStatus !== "match" ||
+              (notificationStatus !== "granted" && notificationStatus !== "unsupported")
+            }
             className="mt-2 rounded-full bg-brand-600 px-4 py-3 font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700 disabled:opacity-50"
           >
             {submitting ? tc("loading") : t("finish")}

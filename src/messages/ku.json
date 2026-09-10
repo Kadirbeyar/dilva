@@ -121,7 +121,8 @@
     "notificationRequiredNote": "دڤێت تو notification یا خۆ اجباری allow بکەی، دا هەرگاڤ پەیام یان ئاگەهیەک هەبیت، تو زانبی — ب تایبەتی دەمێ Dilva دئخی سەر home screen ا مۆبایلێ خۆ. بێ ڤێ، ئەکاونت ناکاربیت.",
     "notificationButton": "ئاگەهدارییان اجباری allow بکە",
     "notificationConfirmed": "ئاگەهدارییێن تە هاتنه پشتراستکرن",
-    "notificationDenied": "دەسگەهشتنا notification هاتە ژنکرن، سەرنەکەفت، یان گەریانوکێ تە پشتگیریێ ڤێ ناکەت. اجباریە تو ڤێ allow بکەی دا بشێی ئەکاونتەکێ دروست بکەی — دووبارە هەول بدە.",
+    "notificationDenied": "دەسگەهشتنا notification هاتە ژنکرن. اجباریە تو ڤێ allow بکەی دا بشێی ئەکاونتەکێ دروست بکەی — دووبارە هەول بدە.",
+    "notificationUnsupportedNote": "ڤی browser/ئامێری تە نوکه پشتگیریێ notification ناکەت — ئەڤە زۆرجار ل ئایڤۆنی دبیت هەتا Dilva نەهاتبیته زێدەکرن سەر Home Screen. تو دشێی بێ ڤێ بەردەوام بی و پاشی ژ ناڤ Settings دا notification چالاک بکەی.",
     "notificationRequiredError": "پێدڤیه پشتی notification ب اجباری allow بکەی",
     "countryLockedHint": "وەلات ناهێتە گوهۆرین ژبەر کو پشتی location یا تە یا راستەقینه هاتیه پشتراستکرن لدەمێ دروستکرنا هەژماری."
   },

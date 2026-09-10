@@ -121,7 +121,8 @@
     "notificationRequiredNote": "Hiçbir mesajı veya güncellemeyi kaçırmaman için bildirimlere izin vermelisin — özellikle Dilva'yı ana ekrana eklediğinde önemlidir. Bu olmadan hesap oluşturulamaz.",
     "notificationButton": "Bildirimlere izin ver",
     "notificationConfirmed": "Bildirimler etkinleştirildi",
-    "notificationDenied": "Bildirim erişimi reddedildi, başarısız oldu veya bu tarayıcı tarafından desteklenmiyor. Hesap oluşturmak için izin vermelisin — lütfen tekrar dene.",
+    "notificationDenied": "Bildirim erişimi reddedildi. Hesap oluşturmak için izin vermelisin — lütfen tekrar dene.",
+    "notificationUnsupportedNote": "Bu tarayıcı/cihaz şu anda bildirimleri desteklemiyor — bu genellikle Dilva ana ekrana eklenmediğinde iPhone'da görülür. Bunsuz devam edebilir ve bildirimleri daha sonra Ayarlar'dan etkinleştirebilirsin.",
     "notificationRequiredError": "Bildirimlere izin vermelisin",
     "countryLockedHint": "Ülke değiştirilemez — kayıt olurken gerçek GPS konumunla doğrulandı."
   },
