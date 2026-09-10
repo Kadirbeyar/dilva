@@ -3,6 +3,14 @@ import { Link } from "@/i18n/navigation";
 import { PRIVACY } from "@/lib/legal-content";
 import type { AppLocale } from "@/i18n/routing";
 
+const LAST_UPDATED_LABEL: Record<AppLocale, string> = {
+  ku: "دویماهیک نویکری: ",
+  ckb: "دوایین نوێکردنەوە: ",
+  ar: "آخر تحديث: ",
+  tr: "Son güncelleme: ",
+  en: "Last updated: ",
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const doc = PRIVACY[(locale as AppLocale) ?? "en"] ?? PRIVACY.en;
@@ -24,7 +32,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
 
       <h1 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">{doc.title}</h1>
       <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {locale === "ku" ? "دویماهیک نویکری: " : locale === "tr" ? "Son güncelleme: " : "Last updated: "}
+        {LAST_UPDATED_LABEL[(locale as AppLocale) ?? "en"] ?? LAST_UPDATED_LABEL.en}
         {doc.updated}
       </p>
 

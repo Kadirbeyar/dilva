@@ -44,11 +44,15 @@ export async function generateMetadata({
   const { locale } = await params;
   const titles: Record<string, string> = {
     ku: "Dilva — فێربوونا زمانان و هاڤاڵێن زمانی",
+    ckb: "Dilva — فێربوونی زمان و دۆزینەوەی هاوبەشی زمانی",
+    ar: "Dilva — تعلّم اللغات وتعرّف على متحدثين أصليين",
     tr: "Dilva — Dil Öğren, Dil Partneri Bul",
     en: "Dilva — Learn Languages, Meet Native Speakers",
   };
   const descriptions: Record<string, string> = {
     ku: "Dilva تە دگەهینیته کەسێن خودان زمانێ دایکی یێ تو فێر دبی، دا پێکڤه بئخڤن، بنڤیسن و هەڤدو ڕاست بکەن.",
+    ckb: "Dilva تۆ لەگەڵ خاوەن زمانە بنەڕەتییەکان دەبەستێتەوە — چات بکە، پۆست بنووسە، و یەکتری ڕاست بکەنەوە.",
+    ar: "يربطك Dilva بمتحدثين أصليين للغة التي تتعلمها — تحدّث، انشر، وصحّحوا لبعضكم البعض.",
     tr: "Dilva, dil öğrenenleri anadili konuşanlarla buluşturur — sohbet edin, birbirinizin gönderilerini düzeltin ve birlikte öğrenin.",
     en: "Dilva connects language learners with native speakers to chat, correct each other's posts, and learn together.",
   };
@@ -62,7 +66,17 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: url,
-      languages: { ku: `${SITE_URL}/ku`, tr: `${SITE_URL}/tr`, en: `${SITE_URL}/en` },
+      languages: {
+        ku: `${SITE_URL}/ku`,
+        // "ckb" alone isn't in next/Google's known hreflang code list
+        // (bare 3-letter codes aren't, only "xx" or "xx-YY" forms are) —
+        // "ckb-IQ" (Sorani Kurdish, Iraq) is a valid BCP-47 tag and
+        // still points at the same /ckb route.
+        "ckb-IQ": `${SITE_URL}/ckb`,
+        ar: `${SITE_URL}/ar`,
+        tr: `${SITE_URL}/tr`,
+        en: `${SITE_URL}/en`,
+      },
     },
     // Lets the site be "installed" — on iPhone: Safari → Share → Add
     // to Home Screen — so it opens full-screen with its own icon, no

@@ -40,7 +40,7 @@ function dayKey(iso: string) {
 
 function formatTime(iso: string, locale: string) {
   try {
-    return new Intl.DateTimeFormat(locale === "ku" ? "en" : locale, {
+    return new Intl.DateTimeFormat(locale === "ku" || locale === "ckb" ? "en" : locale, {
       hour: "numeric",
       minute: "2-digit",
     }).format(new Date(iso));
@@ -57,7 +57,7 @@ function formatDayLabel(iso: string, locale: string) {
   if (key === today) return null; // handled by caller via translation key
   if (key === yesterday) return "yesterday";
   try {
-    return new Intl.DateTimeFormat(locale === "ku" ? "en" : locale, {
+    return new Intl.DateTimeFormat(locale === "ku" || locale === "ckb" ? "en" : locale, {
       day: "numeric",
       month: "short",
       year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
