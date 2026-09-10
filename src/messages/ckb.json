@@ -317,7 +317,21 @@
     "manualPaymentStatusRejected": "ڕەتکراوەتەوە",
     "manualPaymentApprove": "پەسەندبکە و Premium ببەخشە",
     "manualPaymentReject": "ڕەتکردنەوە",
-    "manualPaymentsRecent": "بەم دواییە پێداچوونەوەیان بۆ کراوە"
+    "manualPaymentsRecent": "بەم دواییە پێداچوونەوەیان بۆ کراوە",
+    "userPremiumTitle": "بەڕێوەبردنی Premiumی بەکارهێنەران",
+    "userPremiumSubtitle": "بگەڕێ بۆ بەکارهێنەرێک بۆ ئەوەی بە دەست Premiumی پێبدەیت یان هەڵیبوەشێنیتەوە — پێویست بە پارەدان ناکات.",
+    "userPremiumSearchPlaceholder": "بگەڕێ بە ناوی بەکارهێنەر یان ناو…",
+    "userPremiumSearchButton": "گەڕان",
+    "userPremiumNoResults": "هیچ بەکارهێنەرێک نەدۆزرایەوە",
+    "userPremiumStatusActive": "Premium تا {date}",
+    "userPremiumStatusBonus": "Premium (پاداشتی ڕاژە) تا {date}",
+    "userPremiumStatusNone": "Premium نییە",
+    "userPremiumGrantButton": "پێیبدە",
+    "userPremiumCancelButton": "Premium هەڵبوەشێنەوە",
+    "userPremiumCancelConfirm": "دڵنیابوونەوە لە هەڵوەشاندنەوە",
+    "userPremiumGranted": "Premium درا ✓",
+    "userPremiumCancelled": "Premium هەڵوەشێنرایەوە",
+    "userPremiumError": "شتێک هەڵەی ڕوویدا، تکایە دووبارە هەوڵبدەرەوە."
   },
   "report": {
     "reportButton": "ڕاپۆرت",

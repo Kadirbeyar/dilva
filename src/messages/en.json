@@ -317,7 +317,21 @@
     "manualPaymentStatusRejected": "Rejected",
     "manualPaymentApprove": "Approve & grant Premium",
     "manualPaymentReject": "Reject",
-    "manualPaymentsRecent": "Recently reviewed"
+    "manualPaymentsRecent": "Recently reviewed",
+    "userPremiumTitle": "Manage user Premium",
+    "userPremiumSubtitle": "Search for a user to manually grant or cancel their Premium — no payment needed.",
+    "userPremiumSearchPlaceholder": "Search by username or name…",
+    "userPremiumSearchButton": "Search",
+    "userPremiumNoResults": "No users found",
+    "userPremiumStatusActive": "Premium until {date}",
+    "userPremiumStatusBonus": "Premium (referral bonus) until {date}",
+    "userPremiumStatusNone": "No Premium",
+    "userPremiumGrantButton": "Grant",
+    "userPremiumCancelButton": "Cancel Premium",
+    "userPremiumCancelConfirm": "Confirm cancel",
+    "userPremiumGranted": "Premium granted ✓",
+    "userPremiumCancelled": "Premium cancelled",
+    "userPremiumError": "Something went wrong, please try again."
   },
   "report": {
     "reportButton": "Report",

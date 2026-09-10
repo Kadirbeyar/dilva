@@ -317,7 +317,21 @@
     "manualPaymentStatusRejected": "Reddedildi",
     "manualPaymentApprove": "Onayla ve Premium ver",
     "manualPaymentReject": "Reddet",
-    "manualPaymentsRecent": "Son incelenenler"
+    "manualPaymentsRecent": "Son incelenenler",
+    "userPremiumTitle": "Kullanıcı Premium yönetimi",
+    "userPremiumSubtitle": "Bir kullanıcı arayarak Premium'unu elle verin veya iptal edin — ödeme gerekmez.",
+    "userPremiumSearchPlaceholder": "Kullanıcı adı veya isimle ara…",
+    "userPremiumSearchButton": "Ara",
+    "userPremiumNoResults": "Kullanıcı bulunamadı",
+    "userPremiumStatusActive": "{date} tarihine kadar Premium",
+    "userPremiumStatusBonus": "Premium (referans bonusu) — {date} tarihine kadar",
+    "userPremiumStatusNone": "Premium yok",
+    "userPremiumGrantButton": "Ver",
+    "userPremiumCancelButton": "Premium'u iptal et",
+    "userPremiumCancelConfirm": "İptali onayla",
+    "userPremiumGranted": "Premium verildi ✓",
+    "userPremiumCancelled": "Premium iptal edildi",
+    "userPremiumError": "Bir şeyler ters gitti, tekrar dene."
   },
   "report": {
     "reportButton": "Bildir",

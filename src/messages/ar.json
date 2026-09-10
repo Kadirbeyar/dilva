@@ -317,7 +317,21 @@
     "manualPaymentStatusRejected": "مرفوض",
     "manualPaymentApprove": "قبول ومنح Premium",
     "manualPaymentReject": "رفض",
-    "manualPaymentsRecent": "تمت مراجعتها مؤخراً"
+    "manualPaymentsRecent": "تمت مراجعتها مؤخراً",
+    "userPremiumTitle": "إدارة Premium للمستخدمين",
+    "userPremiumSubtitle": "ابحث عن مستخدم لمنحه Premium يدويًا أو إلغائه — بدون الحاجة لدفع.",
+    "userPremiumSearchPlaceholder": "ابحث باسم المستخدم أو الاسم…",
+    "userPremiumSearchButton": "بحث",
+    "userPremiumNoResults": "لم يتم العثور على مستخدمين",
+    "userPremiumStatusActive": "Premium حتى {date}",
+    "userPremiumStatusBonus": "Premium (مكافأة إحالة) حتى {date}",
+    "userPremiumStatusNone": "لا يوجد Premium",
+    "userPremiumGrantButton": "منح",
+    "userPremiumCancelButton": "إلغاء Premium",
+    "userPremiumCancelConfirm": "تأكيد الإلغاء",
+    "userPremiumGranted": "تم منح Premium ✓",
+    "userPremiumCancelled": "تم إلغاء Premium",
+    "userPremiumError": "حدث خطأ ما، الرجاء المحاولة مرة أخرى."
   },
   "report": {
     "reportButton": "إبلاغ",

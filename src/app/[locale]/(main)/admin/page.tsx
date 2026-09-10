@@ -10,6 +10,7 @@ import BroadcastForm from "@/components/admin/BroadcastForm";
 import ReportedPostsPanel, { type ReportedPost } from "@/components/admin/ReportedPostsPanel";
 import ManualPaymentSettingsForm from "@/components/admin/ManualPaymentSettingsForm";
 import ManualPaymentsPanel, { type ManualPaymentRequestItem } from "@/components/admin/ManualPaymentsPanel";
+import UserPremiumPanel from "@/components/admin/UserPremiumPanel";
 
 export default async function AdminPage() {
   const t = await getTranslations("admin");
@@ -187,6 +188,10 @@ export default async function AdminPage() {
           initialCryptoInfo={appSettings.manualPaymentCryptoInfo}
           initialFibInfo={appSettings.manualPaymentFibInfo}
         />
+      </div>
+
+      <div className="mt-6">
+        <UserPremiumPanel />
       </div>
 
       <div className="mt-6">

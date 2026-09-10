@@ -317,7 +317,21 @@
     "manualPaymentStatusRejected": "هاتە ڕەتکرن",
     "manualPaymentApprove": "پشتراستکرن و دانا Premium",
     "manualPaymentReject": "ڕەتکرن",
-    "manualPaymentsRecent": "یێن دویماهیک هاتنه دیتن"
+    "manualPaymentsRecent": "یێن دویماهیک هاتنه دیتن",
+    "userPremiumTitle": "بەڕێڤەبرنا Premium یا بکارهێنەران",
+    "userPremiumSubtitle": "لێگەڕیان بو بکارهێنەرەکی دا Premium بدەیێ یان بگری، بێ پارەدان.",
+    "userPremiumSearchPlaceholder": "ب ناڤێ بکارهێنەری یان ناڤێ نیشاندانێ بگەڕیە…",
+    "userPremiumSearchButton": "گەڕیان",
+    "userPremiumNoResults": "چ بکارهێنەرەک نەهاته دیتن",
+    "userPremiumStatusActive": "Premium هەتا {date}",
+    "userPremiumStatusBonus": "Premium (بۆنوسا هاندان) هەتا {date}",
+    "userPremiumStatusNone": "Premium نینه",
+    "userPremiumGrantButton": "بدەیێ",
+    "userPremiumCancelButton": "Premium بگرە",
+    "userPremiumCancelConfirm": "پشتراستکرنا گرتنێ",
+    "userPremiumGranted": "Premium هاته دان ✓",
+    "userPremiumCancelled": "Premium هاته گرتن",
+    "userPremiumError": "شتەک خەلەت چوو، دووبارە هەوڵ بدە."
   },
   "report": {
     "reportButton": "ڕاپۆرت",
