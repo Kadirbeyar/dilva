@@ -28,19 +28,31 @@ function stripLocale(pathname: string): string {
   return pathname;
 }
 
-// Purely public, auth-independent pages — confirmed none of these read
-// session state server-side, none are in PROTECTED_PATHS, and all are
-// exempt from the onboarding redirect below. For these, and ONLY these,
-// the middleware skips the Supabase auth check entirely (see the early
-// return in middleware()) rather than unconditionally calling
-// supabase.auth.getUser() on every single request.
+// Genuinely static pages: nothing on them ever depends on whether the
+// visitor is signed in, so the middleware skips the Supabase auth check
+// entirely for these (see the early return in middleware()) rather than
+// unconditionally calling supabase.auth.getUser() on every request.
 //
 // getUser() makes a real network round-trip to Supabase's Auth API
-// (that's what lets it also refresh an expiring session, which is why
-// protected/onboarding-aware pages still need it) — running that on
-// EVERY navigation, including the plain landing page, was adding
-// noticeable latency across the whole site, not just DB-heavy pages.
-const PUBLIC_NO_AUTH_PATHS = ["/", "/terms", "/privacy", "/login", "/signup", "/install"];
+// (that's what lets it also refresh an expiring session) — running it
+// on EVERY navigation was adding noticeable latency across the whole
+// site, not just DB-heavy pages, so it's skipped wherever the answer
+// genuinely doesn't matter.
+const STATIC_NO_AUTH_PATHS = ["/terms", "/privacy", "/install"];
+
+// Guest-facing pages that DO need to know whether the visitor is signed
+// in — not to gate them (a logged-out visitor sees them normally), but
+// to bounce an ALREADY signed-in visitor onward to /feed (or
+// /onboarding) instead of showing them the marketing homepage or a
+// login form again.
+//
+// This is what was behind "it logs me out every time I close and
+// reopen the app": these pages never checked auth at all, so relaunching
+// the installed app/PWA — which always opens back at "/" — landed on
+// the guest homepage regardless of whether the session cookie was still
+// perfectly valid. It looked exactly like being logged out even when it
+// wasn't.
+const AUTH_AWARE_GUEST_PATHS = ["/", "/login", "/signup"];
 
 // Keep in sync with lib/supabase/client.ts and lib/supabase/server.ts —
 // without an explicit maxAge, @supabase/ssr's auth cookie has no
@@ -57,10 +69,10 @@ export async function middleware(request: NextRequest) {
   const response = intlResponse ?? NextResponse.next();
 
   const cleanPath = stripLocale(request.nextUrl.pathname);
-  const isPublicNoAuth = PUBLIC_NO_AUTH_PATHS.some(
+  const isStaticNoAuth = STATIC_NO_AUTH_PATHS.some(
     (p) => cleanPath === p || cleanPath.startsWith(p + "/")
   );
-  if (isPublicNoAuth) {
+  if (isStaticNoAuth) {
     return response;
   }
 
@@ -108,6 +120,20 @@ export async function middleware(request: NextRequest) {
     }
   } catch {
     authNetworkError = true;
+  }
+
+  // An already signed-in visitor landing on the homepage/login/signup
+  // (typically from relaunching the installed app/PWA, which always
+  // opens back at "/") gets sent straight to /feed — or /onboarding if
+  // they never finished their profile — instead of seeing the guest
+  // marketing page or a login form as if they'd been signed out.
+  const isAuthAwareGuestPath = AUTH_AWARE_GUEST_PATHS.some(
+    (p) => cleanPath === p || cleanPath.startsWith(p + "/")
+  );
+  if (isAuthAwareGuestPath && user && !authNetworkError) {
+    const locale = request.nextUrl.pathname.split("/")[1] || routing.defaultLocale;
+    const onboarded = Boolean((user.user_metadata as { onboarded?: boolean } | undefined)?.onboarded);
+    return NextResponse.redirect(new URL(`/${locale}/${onboarded ? "feed" : "onboarding"}`, request.url));
   }
 
   const requiresAuth = PROTECTED_PATHS.some(
