@@ -225,6 +225,30 @@ export default function VoiceRoomView({
     sendSignal(peerId, "offer", offer);
   }
 
+  /**
+   * Decides whether WE should be the one to start a WebRTC connection
+   * to `peerId`, using a deterministic tie-breaker (lower user id
+   * initiates) instead of "whoever joined more recently" — reading
+   * presenceState() right after subscribe() is a race (the initial
+   * presence sync is a separate message that can arrive a beat after
+   * the SUBSCRIBED callback fires), which was silently leaving BOTH
+   * sides waiting for an offer that neither ever sent: presence still
+   * showed everyone correctly (that only needs the "sync" event,
+   * unrelated to WebRTC), but no audio ever negotiated. Calling this
+   * from every "join"/"sync" presence event, on both sides, and
+   * guarding against re-initiating an already-open connection, makes
+   * it self-healing regardless of event ordering.
+   */
+  function maybeInitiate(peerId: string) {
+    if (peerId === currentUser.id) return;
+    if (peersRef.current[peerId]) return;
+    if (currentUser.id < peerId) {
+      void initiateOffer(peerId);
+    }
+    // else: the other side's id sorts lower — they're the one who
+    // will send us an offer; we just answer it in handleSignal.
+  }
+
   async function handleSignal(payload: SignalPayload) {
     if (payload.to !== currentUser.id) return;
     const { from, kind, data } = payload;
@@ -278,6 +302,11 @@ export default function VoiceRoomView({
       }
     }
     setMembers(next);
+    // Backstop: also (re-)evaluate connections for everyone currently
+    // present, in case a "join" event was ever missed (e.g. right
+    // after a reconnect) — maybeInitiate no-ops for peers we're
+    // already connected to.
+    Object.keys(next).forEach((key) => maybeInitiate(key));
   }
 
   function teardown() {
@@ -326,6 +355,9 @@ export default function VoiceRoomView({
       .on("presence", { event: "sync" }, () => {
         syncMembers();
       })
+      .on("presence", { event: "join" }, ({ key }: { key: string }) => {
+        maybeInitiate(key);
+      })
       .on("presence", { event: "leave" }, ({ key }: { key: string }) => {
         if (key !== currentUser.id) cleanupPeer(key);
       })
@@ -344,12 +376,13 @@ export default function VoiceRoomView({
           return;
         }
 
+        // Connections themselves are driven entirely by the "join"/
+        // "sync" handlers above (see maybeInitiate) — they fire for
+        // every already-present member as part of this subscribe's
+        // own initial presence sync, so nothing else needs to happen
+        // here beyond announcing ourselves.
         await channel.track(myPresence(false));
         setPhase("joined");
-
-        for (const peerId of existingKeys) {
-          void initiateOffer(peerId);
-        }
       });
   }
 
