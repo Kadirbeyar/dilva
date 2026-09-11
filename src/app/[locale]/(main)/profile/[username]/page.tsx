@@ -55,7 +55,14 @@ export default async function PublicProfilePage({
     take: 30,
     include: {
       author: {
-        select: { id: true, username: true, displayName: true, avatarUrl: true, isPremiumCached: true },
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+          isPremiumCached: true,
+          country: true,
+        },
       },
       language: true,
       _count: { select: { likes: true, comments: true, corrections: true } },

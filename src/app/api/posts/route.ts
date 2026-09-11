@@ -48,7 +48,14 @@ export async function GET(req: Request) {
       orderBy: { createdAt: "desc" },
       include: {
         author: {
-          select: { id: true, username: true, displayName: true, avatarUrl: true, isPremiumCached: true },
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            isPremiumCached: true,
+            country: true,
+          },
         },
         language: true,
         _count: { select: { likes: true, comments: true, corrections: true } },
@@ -90,7 +97,14 @@ export async function POST(req: Request) {
       },
       include: {
         author: {
-          select: { id: true, username: true, displayName: true, avatarUrl: true, isPremiumCached: true },
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            isPremiumCached: true,
+            country: true,
+          },
         },
         language: true,
       },

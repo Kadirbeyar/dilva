@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import PremiumCrown from "@/components/profile/PremiumCrown";
 import VerifiedBadge from "@/components/profile/VerifiedBadge";
 import { withinPostEditWindow } from "@/lib/postEditWindow";
+import { countryFlag } from "@/lib/countryFlags";
 
 export type FeedPost = {
   id: string;
@@ -20,10 +21,50 @@ export type FeedPost = {
     displayName: string | null;
     avatarUrl: string | null;
     isPremiumCached?: boolean;
+    country?: string | null;
   };
   language?: { code: string; name: string; nativeName: string } | null;
   _count: { likes: number; comments: number; corrections: number };
 };
+
+/** Outline/filled heart used for the Like button — filled + red once liked. */
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px]"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={filled ? 0 : 1.8}
+    >
+      <path d="M12 20.5s-7.5-4.6-10-9.3C.4 8 1.7 4.5 5 3.4c2.2-.7 4.4.1 5.6 1.9L12 6.9l1.4-1.6c1.2-1.8 3.4-2.6 5.6-1.9 3.3 1.1 4.6 4.6 3 7.8-2.5 4.7-10 9.3-10 9.3Z" />
+    </svg>
+  );
+}
+
+function CommentIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={1.8}>
+      <path
+        d="M4 12.5c0-4.7 3.8-8.5 8.5-8.5S21 7.8 21 12.5 17.2 21 12.5 21c-1.2 0-2.4-.2-3.4-.7L4 21l1.2-4.3c-.8-1.2-1.2-2.6-1.2-4.2Z"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CorrectIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={1.8}>
+      <path d="M12 20h9" strokeLinecap="round" />
+      <path
+        d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 type Comment = {
   id: string;
@@ -213,23 +254,32 @@ export default function PostCard({
   return (
     <motion.article
       whileHover={{ y: -2 }}
-      className="card-shadow rounded-2xl bg-white p-4 transition-shadow hover:card-shadow-lift dark:bg-gray-800"
+      className="card-shadow rounded-3xl border border-black/5 bg-white p-4 transition-shadow hover:card-shadow-lift dark:border-white/5 dark:bg-gray-800"
     >
       <Link href={`/profile/${post.author.username}` as any} className="flex items-center gap-3">
-        <div className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+        <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-gray-200 ring-2 ring-white dark:bg-gray-700 dark:ring-gray-800">
           {post.author.avatarUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={post.author.avatarUrl} alt="" className="h-full w-full object-cover" />
           )}
           {post.author.isPremiumCached && <PremiumCrown />}
         </div>
-        <div>
-          <p className="font-semibold">
-            {post.author.displayName || post.author.username}
+        <div className="min-w-0">
+          <p className="flex items-center font-semibold text-gray-900 dark:text-white">
+            <span className="truncate">{post.author.displayName || post.author.username}</span>
             {post.author.isPremiumCached && <VerifiedBadge />}
           </p>
-          {post.language && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">{post.language.nativeName}</p>
+          {(post.author.country || post.language) && (
+            <p className="flex items-center gap-1 truncate text-xs text-gray-500 dark:text-gray-400">
+              {post.author.country ? (
+                <>
+                  {countryFlag(post.author.country) && <span>{countryFlag(post.author.country)}</span>}
+                  <span className="truncate">{post.author.country}</span>
+                </>
+              ) : (
+                post.language && <span className="truncate">{post.language.nativeName}</span>
+              )}
+            </p>
           )}
         </div>
       </Link>
@@ -275,22 +325,37 @@ export default function PostCard({
         <video src={post.videoUrl} controls className="mt-3 max-h-[420px] w-full rounded-xl bg-black" />
       )}
 
-      <div className="mt-3 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+      <div className="mt-3 flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
         <motion.button
           whileTap={{ scale: 0.85 }}
           onClick={toggleLike}
-          className={liked ? "font-semibold text-brand-700 dark:text-brand-300" : ""}
+          aria-label={t("like")}
+          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 transition hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            liked ? "font-semibold text-red-500" : ""
+          }`}
         >
-          {t("like")} · {likes}
+          <HeartIcon filled={liked} />
+          {likes}
         </motion.button>
         <button
           onClick={toggleComments}
-          className={showComments ? "font-semibold text-brand-700 dark:text-brand-300" : ""}
+          aria-label={t("comment")}
+          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 transition hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            showComments ? "font-semibold text-brand-700 dark:text-brand-300" : ""
+          }`}
         >
-          {t("comment")} · {commentCount}
+          <CommentIcon />
+          {commentCount}
         </button>
-        <button onClick={() => setShowCorrection((v) => !v)}>
-          {t("correct")} · {correctionsCount}
+        <button
+          onClick={() => setShowCorrection((v) => !v)}
+          aria-label={t("correct")}
+          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 transition hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            showCorrection ? "font-semibold text-brand-700 dark:text-brand-300" : ""
+          }`}
+        >
+          <CorrectIcon />
+          {correctionsCount}
         </button>
 
         {(canEdit || canDelete) && !editing && (
