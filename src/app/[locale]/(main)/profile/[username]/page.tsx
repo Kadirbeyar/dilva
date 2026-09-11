@@ -62,6 +62,7 @@ export default async function PublicProfilePage({
           avatarUrl: true,
           isPremiumCached: true,
           country: true,
+          city: true,
         },
       },
       language: true,

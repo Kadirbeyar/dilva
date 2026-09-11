@@ -7,7 +7,8 @@ import { Link } from "@/i18n/navigation";
 import PremiumCrown from "@/components/profile/PremiumCrown";
 import VerifiedBadge from "@/components/profile/VerifiedBadge";
 import { withinPostEditWindow } from "@/lib/postEditWindow";
-import { countryFlag } from "@/lib/countryFlags";
+import { postLocationLabel } from "@/lib/postLocationLabel";
+import KurdistanFlagIcon from "@/components/shared/KurdistanFlagIcon";
 
 export type FeedPost = {
   id: string;
@@ -22,6 +23,7 @@ export type FeedPost = {
     avatarUrl: string | null;
     isPremiumCached?: boolean;
     country?: string | null;
+    city?: string | null;
   };
   language?: { code: string; name: string; nativeName: string } | null;
   _count: { likes: number; comments: number; corrections: number };
@@ -269,18 +271,28 @@ export default function PostCard({
             <span className="truncate">{post.author.displayName || post.author.username}</span>
             {post.author.isPremiumCached && <VerifiedBadge />}
           </p>
-          {(post.author.country || post.language) && (
-            <p className="flex items-center gap-1 truncate text-xs text-gray-500 dark:text-gray-400">
-              {post.author.country ? (
-                <>
-                  {countryFlag(post.author.country) && <span>{countryFlag(post.author.country)}</span>}
-                  <span className="truncate">{post.author.country}</span>
-                </>
-              ) : (
-                post.language && <span className="truncate">{post.language.nativeName}</span>
-              )}
-            </p>
-          )}
+          {(() => {
+            const loc = postLocationLabel(post.author.country, post.author.city);
+            if (loc) {
+              return (
+                <p className="flex items-center gap-1 truncate text-xs text-gray-500 dark:text-gray-400">
+                  {loc.isKurdistan ? (
+                    <KurdistanFlagIcon className="h-3 w-[18px] shrink-0 rounded-[1px]" />
+                  ) : (
+                    loc.flagEmoji && <span>{loc.flagEmoji}</span>
+                  )}
+                  <span className="truncate">{loc.text}</span>
+                </p>
+              );
+            }
+            return (
+              post.language && (
+                <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                  {post.language.nativeName}
+                </p>
+              )
+            );
+          })()}
         </div>
       </Link>
 
