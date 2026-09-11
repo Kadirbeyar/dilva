@@ -155,7 +155,10 @@
     "mediaTypeError": "Only images or videos can be attached",
     "mediaSizeError": "File must be under 50MB",
     "rateLimited": "You're posting a bit too fast — please wait a moment and try again.",
-    "mediaModerationError": "This photo doesn't meet Dilva's content guidelines — please choose another."
+    "mediaModerationError": "This photo doesn't meet Dilva's content guidelines — please choose another.",
+    "tabFollowing": "Following",
+    "tabExplore": "Explore",
+    "emptyFollowing": "No posts yet from people you follow — check Explore to find new people."
   },
   "matches": {
     "title": "Find language partners",

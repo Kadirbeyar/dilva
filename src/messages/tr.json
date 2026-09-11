@@ -155,7 +155,10 @@
     "mediaTypeError": "Yalnızca fotoğraf veya video eklenebilir",
     "mediaSizeError": "Dosya 50MB'den küçük olmalı",
     "rateLimited": "Biraz fazla hızlı paylaşıyorsun — lütfen bir süre bekleyip tekrar dene.",
-    "mediaModerationError": "Bu fotoğraf Dilva'nın içerik kurallarına uymuyor — lütfen başka bir tane seç."
+    "mediaModerationError": "Bu fotoğraf Dilva'nın içerik kurallarına uymuyor — lütfen başka bir tane seç.",
+    "tabFollowing": "Takip Edilenler",
+    "tabExplore": "Keşfet",
+    "emptyFollowing": "Takip ettiğin kişilerden henüz gönderi yok — yeni insanlar bulmak için Keşfet'e göz at."
   },
   "matches": {
     "title": "Dil partneri bul",

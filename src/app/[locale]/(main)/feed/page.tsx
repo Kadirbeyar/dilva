@@ -6,41 +6,43 @@ import { useTranslations } from "next-intl";
 import PostCard, { type FeedPost } from "@/components/feed/PostCard";
 import PostMediaUploader, { type PostMedia } from "@/components/feed/PostMediaUploader";
 
+type Tab = "following" | "explore";
+
 export default function FeedPage() {
   const t = useTranslations("feed");
+  // "explore" (everyone, language-filtered) is the default tab rather
+  // than "following" — a brand-new account follows nobody yet, so
+  // defaulting to "following" would greet them with an empty feed
+  // instead of showing them the app actually has content.
+  const [tab, setTab] = useState<Tab>("explore");
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [postsLoaded, setPostsLoaded] = useState(false);
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<PostMedia>(null);
   const [posting, setPosting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [postError, setPostError] = useState<string | null>(null);
 
-  async function loadPosts() {
-    const res = await fetch("/api/posts");
+  async function loadPosts(scope: Tab) {
+    setPostsLoaded(false);
+    const res = await fetch(`/api/posts?scope=${scope}`);
     const data = await res.json();
     setPosts(data.posts ?? []);
+    setPostsLoaded(true);
   }
 
+  // The signed-in user's own id only affects per-post edit/delete/like
+  // UI — it never depends on which tab is active, so it's fetched once.
   useEffect(() => {
-    // Parallel here is fine — unlike Prisma calls WITHIN one request
-    // (which share a single connection_limit=1 client and must stay
-    // sequential), these are two separate browser fetches to two
-    // separate route handlers/invocations, each with its own
-    // short-lived connection. Awaiting /api/profile/me before even
-    // starting /api/posts was a pure client-side waterfall that
-    // doubled the round-trip time for zero benefit — posts don't need
-    // the profile response for anything but the (UI-only) currentUserId.
-    (async () => {
-      const [meRes, postsRes] = await Promise.all([
-        fetch("/api/profile/me"),
-        fetch("/api/posts"),
-      ]);
-      const meData = await meRes.json();
-      const postsData = await postsRes.json();
-      setCurrentUserId(meData.profile?.id ?? null);
-      setPosts(postsData.posts ?? []);
-    })();
+    fetch("/api/profile/me")
+      .then((r) => r.json())
+      .then((d) => setCurrentUserId(d.profile?.id ?? null));
   }, []);
+
+  useEffect(() => {
+    loadPosts(tab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   async function submitPost() {
     if (!content.trim()) return;
@@ -60,7 +62,10 @@ export default function FeedPage() {
     if (res.ok) {
       setContent("");
       setMedia(null);
-      loadPosts();
+      // A brand-new post only ever shows up in Explore (nobody follows
+      // themselves) — refreshing "following" would just be a no-op
+      // network call.
+      if (tab === "explore") loadPosts("explore");
     } else if (res.status === 429) {
       setPostError(t("rateLimited"));
     }
@@ -76,6 +81,27 @@ export default function FeedPage() {
       >
         {t("title")}
       </motion.h1>
+
+      <div className="mt-4 flex items-center gap-1 rounded-full border border-black/5 bg-white/70 p-1 dark:border-white/10 dark:bg-gray-800/60">
+        {(["following", "explore"] as Tab[]).map((key) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`relative flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${
+              tab === key ? "text-white" : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            }`}
+          >
+            {tab === key && (
+              <motion.span
+                layoutId="feed-tab-pill"
+                className="absolute inset-0 -z-10 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 shadow-sm shadow-brand-600/25"
+                transition={{ type: "spring", stiffness: 400, damping: 32 }}
+              />
+            )}
+            {key === "following" ? t("tabFollowing") : t("tabExplore")}
+          </button>
+        ))}
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -109,20 +135,30 @@ export default function FeedPage() {
       </motion.div>
 
       <div className="mt-6 flex flex-col gap-4">
-        <AnimatePresence initial={false}>
-          {posts.map((post, i) => (
-            <motion.div
-              key={post.id}
-              layout
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97 }}
-              transition={{ duration: 0.35, delay: Math.min(i * 0.04, 0.3) }}
-            >
-              <PostCard post={post} currentUserId={currentUserId} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {postsLoaded && tab === "following" && posts.length === 0 ? (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-6 px-4 text-center text-sm text-gray-500 dark:text-gray-400"
+          >
+            {t("emptyFollowing")}
+          </motion.p>
+        ) : (
+          <AnimatePresence initial={false}>
+            {posts.map((post, i) => (
+              <motion.div
+                key={post.id}
+                layout
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.35, delay: Math.min(i * 0.04, 0.3) }}
+              >
+                <PostCard post={post} currentUserId={currentUserId} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
       </div>
     </main>
   );

@@ -24,6 +24,12 @@ const createPostSchema = z.object({
  * tag are treated as general and always shown. A viewer with no
  * languages set yet (fresh signup) sees everything rather than an
  * empty feed.
+ *
+ * `scope=following` narrows this further to only people the viewer
+ * follows (see the Follow model) — the language filter above still
+ * applies on top of that. With nobody followed yet, this returns an
+ * empty list immediately rather than querying Post with an empty
+ * `authorId IN ()`.
  */
 export async function GET(req: Request) {
   try {
@@ -31,20 +37,32 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const cursor = searchParams.get("cursor") ?? undefined;
     const take = Math.min(Number(searchParams.get("take") ?? 20), 50);
+    const scope = searchParams.get("scope") === "following" ? "following" : "explore";
 
     const myLanguages = await prisma.userLanguage.findMany({
       where: { userId: user.id },
       select: { languageCode: true },
     });
     const myCodes = myLanguages.map((l: (typeof myLanguages)[number]) => l.languageCode);
+    const languageFilter =
+      myCodes.length > 0 ? { OR: [{ languageCode: null }, { languageCode: { in: myCodes } }] } : {};
+
+    let followingIds: string[] | null = null;
+    if (scope === "following") {
+      const follows = await prisma.follow.findMany({
+        where: { followerId: user.id },
+        select: { followingId: true },
+      });
+      followingIds = follows.map((f: (typeof follows)[number]) => f.followingId) as string[];
+      if (followingIds.length === 0) {
+        return NextResponse.json({ posts: [], nextCursor: null });
+      }
+    }
 
     const posts = await prisma.post.findMany({
       take,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      where:
-        myCodes.length > 0
-          ? { OR: [{ languageCode: null }, { languageCode: { in: myCodes } }] }
-          : undefined,
+      where: followingIds ? { ...languageFilter, authorId: { in: followingIds } } : languageFilter,
       orderBy: { createdAt: "desc" },
       include: {
         author: {
