@@ -97,6 +97,7 @@ export default function VoiceRoomView({
   const [micMuted, setMicMuted] = useState(false);
   const [endingBusy, setEndingBusy] = useState(false);
   const [needsAudioUnlock, setNeedsAudioUnlock] = useState(false);
+  const [connectionStates, setConnectionStates] = useState<Record<string, string>>({});
   const [, forceRender] = useState(0);
   const audioElsRef = useRef<Record<string, HTMLAudioElement>>({});
 
@@ -155,6 +156,12 @@ export default function VoiceRoomView({
       // no-op
     }
     delete analysersRef.current[peerId];
+    setConnectionStates((prev) => {
+      if (!(peerId in prev)) return prev;
+      const next = { ...prev };
+      delete next[peerId];
+      return next;
+    });
     forceRender((v) => v + 1);
   }
 
@@ -193,16 +200,33 @@ export default function VoiceRoomView({
       if (e.candidate) sendSignal(peerId, "candidate", e.candidate.toJSON());
     };
     pc.ontrack = (e) => {
+      // eslint-disable-next-line no-console
+      console.log("[voice-room] ontrack from", peerId, e.streams[0]?.getAudioTracks());
       remoteStreamsRef.current[peerId] = e.streams[0];
       attachAnalyser(peerId, e.streams[0]);
       forceRender((v) => v + 1);
     };
+    // Tracked visibly (see the small status label under each avatar
+    // while phase === "joined") because "I see them but hear
+    // nothing" can mean several very different things — never
+    // reaching "connected", stuck in "checking" (NAT/TURN can't find
+    // a path), or "connected" with truly no audio arriving (a
+    // different bug entirely) — and there's no way to tell those
+    // apart from the outside without this.
     pc.onconnectionstatechange = () => {
+      // eslint-disable-next-line no-console
+      console.log("[voice-room] connectionState", peerId, pc.connectionState);
+      setConnectionStates((prev) => ({ ...prev, [peerId]: pc.connectionState }));
       if (pc.connectionState === "failed" || pc.connectionState === "closed") {
         cleanupPeer(peerId);
       }
     };
+    pc.oniceconnectionstatechange = () => {
+      // eslint-disable-next-line no-console
+      console.log("[voice-room] iceConnectionState", peerId, pc.iceConnectionState);
+    };
     peersRef.current[peerId] = pc;
+    setConnectionStates((prev) => ({ ...prev, [peerId]: pc.connectionState }));
     return pc;
   }
 
@@ -611,6 +635,15 @@ export default function VoiceRoomView({
                         {isMe ? t("you") : m.displayName || m.username}
                         {m.id === room.host.id && <VerifiedBadge size="sm" />}
                       </p>
+                      {/* Temporary connection-state label while we're
+                          tracking down the "I see them but hear
+                          nothing" report — safe to remove once audio
+                          is confirmed working reliably. */}
+                      {!isMe && (
+                        <p className="text-[9px] text-gray-400 dark:text-gray-500">
+                          {connectionStates[m.id] ?? "…"}
+                        </p>
+                      )}
                     </motion.div>
                   );
                 })}
