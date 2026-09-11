@@ -197,7 +197,8 @@
     "voiceMessage": "Sesli mesaj",
     "today": "Bugün",
     "yesterday": "Dün",
-    "onlineNow": "Şu an çevrimiçi"
+    "onlineNow": "Şu an çevrimiçi",
+    "systemAccountNoReply": "Dilva Team'e yanıt veremezsiniz."
   },
   "profile": {
     "editProfile": "Profili düzenle",

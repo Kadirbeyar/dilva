@@ -197,7 +197,8 @@
     "voiceMessage": "پەیامی دەنگی",
     "today": "ئەمڕۆ",
     "yesterday": "دوێنێ",
-    "onlineNow": "ئێستا سەرهێڵە"
+    "onlineNow": "ئێستا سەرهێڵە",
+    "systemAccountNoReply": "ناتوانیت وەڵامی Dilva Team بدەیتەوە."
   },
   "profile": {
     "editProfile": "پرۆفایل دەستکاری بکە",

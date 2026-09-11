@@ -197,7 +197,8 @@
     "voiceMessage": "پەیامەکی دەنگی",
     "today": "ئیرو",
     "yesterday": "دوی",
-    "onlineNow": "نوکە ئۆنلاینه"
+    "onlineNow": "نوکە ئۆنلاینه",
+    "systemAccountNoReply": "تو ناشێی بەرسڤا Dilva Team بدەی."
   },
   "profile": {
     "editProfile": "پروفایلێ سەرڕاست بکە",

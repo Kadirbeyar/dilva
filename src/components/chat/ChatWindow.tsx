@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import PremiumCrown from "@/components/profile/PremiumCrown";
 import VerifiedBadge from "@/components/profile/VerifiedBadge";
+import { DILVA_TEAM_USER_ID } from "@/lib/systemAccounts";
 
 type ChatMessage = {
   id: string;
@@ -81,6 +82,13 @@ export default function ChatWindow({
   const locale = useLocale();
   const router = useRouter();
   const supabase = createClient();
+
+  // The "Dilva Team" broadcast sender (see lib/systemAccounts.ts) is a
+  // real row in "users" but has no one behind it — clicking through to
+  // a profile page for it would be a dead end, and replying to it goes
+  // nowhere (nobody reads it), so both are disabled below instead of
+  // pretending it's a normal contact.
+  const isSystemAccount = otherUser?.id === DILVA_TEAM_USER_ID;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -387,29 +395,43 @@ export default function ChatWindow({
               <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <Link
-            href={`/profile/${otherUser.username}` as any}
-            className="flex flex-1 items-center gap-2.5 rounded-xl px-1.5 py-1 transition hover:bg-black/5 dark:hover:bg-white/5"
-          >
-            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 ring-2 ring-white dark:bg-gray-700 dark:ring-gray-900">
-              {otherUser.avatarUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={otherUser.avatarUrl} alt="" className="h-full w-full object-cover" />
-              )}
-              {otherUser.isPremiumCached && <PremiumCrown />}
+          {isSystemAccount ? (
+            <div className="flex flex-1 items-center gap-2.5 rounded-xl px-1.5 py-1">
+              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 ring-2 ring-white dark:bg-gray-700 dark:ring-gray-900">
+                {otherUser.avatarUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={otherUser.avatarUrl} alt="" className="h-full w-full object-cover" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-semibold leading-tight">{otherUser.displayName || otherUser.username}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="truncate font-semibold leading-tight">
-                {otherUser.displayName || otherUser.username}
-                {otherUser.isPremiumCached && <VerifiedBadge size="sm" />}
-              </p>
-              {otherUser.isOnline && (
-                <p className="flex items-center gap-1 text-[11px] font-medium text-green-600 dark:text-green-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> {t("onlineNow")}
+          ) : (
+            <Link
+              href={`/profile/${otherUser.username}` as any}
+              className="flex flex-1 items-center gap-2.5 rounded-xl px-1.5 py-1 transition hover:bg-black/5 dark:hover:bg-white/5"
+            >
+              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 ring-2 ring-white dark:bg-gray-700 dark:ring-gray-900">
+                {otherUser.avatarUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={otherUser.avatarUrl} alt="" className="h-full w-full object-cover" />
+                )}
+                {otherUser.isPremiumCached && <PremiumCrown />}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-semibold leading-tight">
+                  {otherUser.displayName || otherUser.username}
+                  {otherUser.isPremiumCached && <VerifiedBadge size="sm" />}
                 </p>
-              )}
-            </div>
-          </Link>
+                {otherUser.isOnline && (
+                  <p className="flex items-center gap-1 text-[11px] font-medium text-green-600 dark:text-green-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> {t("onlineNow")}
+                  </p>
+                )}
+              </div>
+            </Link>
+          )}
         </div>
       )}
 
@@ -447,17 +469,28 @@ export default function ChatWindow({
                     transition={{ duration: 0.25, ease: "easeOut" }}
                     className={`flex items-end gap-1.5 ${mine ? "flex-row-reverse" : "flex-row"} ${groupedWithPrev ? "mt-0.5" : "mt-2"}`}
                   >
-                    {!mine && otherUser && (
-                      <Link
-                        href={`/profile/${otherUser.username}` as any}
-                        className={`relative h-6 w-6 shrink-0 self-end overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 ${groupedWithPrev ? "invisible" : ""}`}
-                      >
-                        {otherUser.avatarUrl && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={otherUser.avatarUrl} alt="" className="h-full w-full object-cover" />
-                        )}
-                      </Link>
-                    )}
+                    {!mine &&
+                      otherUser &&
+                      (isSystemAccount ? (
+                        <div
+                          className={`relative h-6 w-6 shrink-0 self-end overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 ${groupedWithPrev ? "invisible" : ""}`}
+                        >
+                          {otherUser.avatarUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={otherUser.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          )}
+                        </div>
+                      ) : (
+                        <Link
+                          href={`/profile/${otherUser.username}` as any}
+                          className={`relative h-6 w-6 shrink-0 self-end overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 ${groupedWithPrev ? "invisible" : ""}`}
+                        >
+                          {otherUser.avatarUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={otherUser.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          )}
+                        </Link>
+                      ))}
                     <div className={`flex max-w-[78%] flex-col ${mine ? "items-end" : "items-start"}`}>
                       <div
                         className={`px-3.5 py-2.5 text-sm shadow-sm ${
@@ -508,6 +541,12 @@ export default function ChatWindow({
       </div>
 
       <div className="border-t border-black/5 bg-white/90 p-2.5 backdrop-blur dark:border-white/10 dark:bg-gray-900/90">
+        {isSystemAccount ? (
+          <p className="rounded-full bg-gray-100 px-4 py-2.5 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+            {t("systemAccountNoReply")}
+          </p>
+        ) : (
+        <>
         {voiceError && <p className="mb-1.5 px-1 text-xs text-red-600">{voiceError}</p>}
         <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-1.5 py-1.5 dark:border-gray-700 dark:bg-gray-800">
           <input
@@ -544,6 +583,8 @@ export default function ChatWindow({
             </svg>
           </motion.button>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

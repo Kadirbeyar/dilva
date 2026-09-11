@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, AuthError } from "@/lib/auth";
 import { enforceRateLimit, RateLimitError } from "@/lib/rateLimit";
 import { sendPushToUser } from "@/lib/webpush";
+import { DILVA_TEAM_USER_ID } from "@/lib/systemAccounts";
 
 const sendSchema = z.object({
   content: z.string().min(1).max(4000),
@@ -13,11 +14,23 @@ const sendSchema = z.object({
   mediaUrl: z.string().url().optional(),
 });
 
+/**
+ * Confirms `userId` is a participant, and in the same round trip
+ * reports whether "Dilva Team" (see lib/systemAccounts.ts) is the
+ * other side of this conversation — the broadcast sender has nobody
+ * reading replies, so POST below refuses to let anyone actually send
+ * one into that thread (the chat UI already hides the composer for
+ * it; this is the server-side half of that, since a hidden button is
+ * not the same as an enforced rule).
+ */
 async function assertParticipant(conversationId: string, userId: string) {
-  const membership = await prisma.conversationParticipant.findUnique({
-    where: { conversationId_userId: { conversationId, userId } },
+  const memberships = await prisma.conversationParticipant.findMany({
+    where: { conversationId, userId: { in: [userId, DILVA_TEAM_USER_ID] } },
+    select: { userId: true },
   });
-  if (!membership) throw new AuthError("Not a participant");
+  const ids = memberships.map((m: (typeof memberships)[number]) => m.userId);
+  if (!ids.includes(userId)) throw new AuthError("Not a participant");
+  return { isSystemConversation: userId !== DILVA_TEAM_USER_ID && ids.includes(DILVA_TEAM_USER_ID) };
 }
 
 export async function GET(
@@ -69,7 +82,10 @@ export async function POST(
   try {
     const user = await requireUser();
     const { id: conversationId } = await params;
-    await assertParticipant(conversationId, user.id);
+    const { isSystemConversation } = await assertParticipant(conversationId, user.id);
+    if (isSystemConversation) {
+      return NextResponse.json({ error: "system_conversation" }, { status: 403 });
+    }
     // 60 messages/minute per account is well above real typing speed
     // (even fast back-and-forth chat) but stops a script from
     // spamming a conversation or hammering Supabase Realtime.

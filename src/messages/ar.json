@@ -197,7 +197,8 @@
     "voiceMessage": "رسالة صوتية",
     "today": "اليوم",
     "yesterday": "الأمس",
-    "onlineNow": "متصل الآن"
+    "onlineNow": "متصل الآن",
+    "systemAccountNoReply": "لا يمكنك الرد على Dilva Team."
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",

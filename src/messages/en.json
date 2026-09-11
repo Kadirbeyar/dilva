@@ -197,7 +197,8 @@
     "voiceMessage": "Voice message",
     "today": "Today",
     "yesterday": "Yesterday",
-    "onlineNow": "Online now"
+    "onlineNow": "Online now",
+    "systemAccountNoReply": "You can't reply to Dilva Team."
   },
   "profile": {
     "editProfile": "Edit profile",
