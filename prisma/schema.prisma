@@ -199,6 +199,12 @@ model User {
   sentMessages  Message[]                  @relation("MessageSender")
   conversations ConversationParticipant[]
 
+  /// Small live-audio group rooms this user has created/hosted — see
+  /// VoiceRoom below. Actual in-room participants are NOT modeled
+  /// here (tracked ephemerally via Supabase Realtime Presence, not
+  /// the database), only who owns/can end a room.
+  hostedVoiceRooms VoiceRoom[]
+
   subscription Subscription?
   payments     Payment[]
 
@@ -414,6 +420,34 @@ model ConversationParticipant {
   @@unique([conversationId, userId])
   @@index([userId])
   @@map("conversation_participants")
+}
+
+/// A small, public, topic-based live-audio room — think "a table of
+/// 2-6 people talking out loud", not a Clubhouse-scale stage with
+/// hundreds of listeners. Kept intentionally lightweight: audio
+/// itself is peer-to-peer WebRTC between participants' browsers
+/// (mesh — practical at this small size, no media-server/SFU needed)
+/// with signaling over a Supabase Realtime broadcast channel named
+/// `voice-room:<id>`; only room metadata (topic, host, is it still
+/// open) lives in Postgres. See src/components/voiceRooms/VoiceRoomView.tsx.
+model VoiceRoom {
+  id String @id @default(cuid())
+
+  topic String @db.VarChar(120)
+
+  hostId String @db.Uuid
+  host   User   @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  /// Hard cap enforced client-side when joining (checked against the
+  /// live Presence member count, not a DB count).
+  maxParticipants Int @default(6)
+
+  isActive Boolean   @default(true)
+  createdAt DateTime @default(now())
+  endedAt   DateTime?
+
+  @@index([isActive, createdAt])
+  @@map("voice_rooms")
 }
 
 model Message {

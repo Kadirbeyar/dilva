@@ -40,6 +40,7 @@ export default function NavBar({ user }: { user: NavUser }) {
     { href: "/feed", label: t("feed") },
     { href: "/matches", label: t("matches") },
     { href: "/nearby", label: t("nearby") },
+    { href: "/voice-rooms", label: t("voiceRooms") },
     { href: "/visitors", label: t("visitors"), badge: unreadVisitors },
     { href: "/chat", label: t("chat"), badge: unreadMessages },
     { href: "/premium", label: t("premium") },

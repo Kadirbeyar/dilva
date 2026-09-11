@@ -13,6 +13,7 @@ const PROTECTED_PATHS = [
   "/chat",
   "/premium",
   "/nearby",
+  "/voice-rooms",
   "/visitors",
   "/onboarding",
   "/settings",
