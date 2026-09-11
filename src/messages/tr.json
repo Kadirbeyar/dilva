@@ -221,6 +221,7 @@
     "joinPrompt": "Mikrofonunu açıp odaya girmek için katıl'a dokun.",
     "joinButton": "Odaya Katıl",
     "connecting": "Bağlanıyor…",
+    "enableSound": "Sesi etkinleştir",
     "micDenied": "Mikrofon erişimi reddedildi",
     "tryAgain": "Tekrar Dene",
     "roomFull": "Bu oda şu anda dolu",

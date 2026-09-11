@@ -36,7 +36,27 @@ type SignalPayload = { from: string; to: string; kind: SignalKind; data: unknown
 
 type Phase = "idle" | "connecting" | "joined" | "mic-denied" | "room-full" | "ended" | "left";
 
-const ICE_SERVERS: RTCIceServer[] = [{ urls: "stun:stun.l.google.com:19302" }];
+// STUN alone only works when at least one side can be reached with a
+// plain public IP:port — many home/mobile ISPs (very much including
+// carrier-grade NAT, common on mobile data) sit both sides behind NAT
+// that STUN can't punch through, so audio negotiates but no media
+// ever actually flows. Open Relay Project's free public TURN servers
+// (no signup, shared credentials — see https://www.metered.ca/tools/openrelay/)
+// are the fallback relay for exactly that case. They're a shared free
+// tier (can be slower/rate-limited under load) — fine for this app's
+// current scale; worth swapping for a paid TURN provider or a
+// self-hosted coturn if Voice Rooms sees heavy use later.
+const ICE_SERVERS: RTCIceServer[] = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:openrelay.metered.ca:80" },
+  { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+  {
+    urls: "turn:openrelay.metered.ca:443?transport=tcp",
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
+];
 // Tuned by ear against a normal speaking voice over a laptop mic, not
 // measured against a spec — good enough for "is someone talking right
 // now" as a visual hint, not for anything that needs to be precise.
@@ -76,7 +96,9 @@ export default function VoiceRoomView({
   const [speakingIds, setSpeakingIds] = useState<Set<string>>(new Set());
   const [micMuted, setMicMuted] = useState(false);
   const [endingBusy, setEndingBusy] = useState(false);
+  const [needsAudioUnlock, setNeedsAudioUnlock] = useState(false);
   const [, forceRender] = useState(0);
+  const audioElsRef = useRef<Record<string, HTMLAudioElement>>({});
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const channelRef = useRef<any>(null);
@@ -126,6 +148,7 @@ export default function VoiceRoomView({
     delete peersRef.current[peerId];
     delete remoteStreamsRef.current[peerId];
     delete pendingCandidatesRef.current[peerId];
+    delete audioElsRef.current[peerId];
     try {
       analysersRef.current[peerId]?.disconnect();
     } catch {
@@ -133,6 +156,29 @@ export default function VoiceRoomView({
     }
     delete analysersRef.current[peerId];
     forceRender((v) => v + 1);
+  }
+
+  /**
+   * Chrome/Safari can block audio playback that isn't tied closely
+   * enough to a user gesture — and a remote WebRTC track normally
+   * arrives asynchronously (after a signaling round trip), well after
+   * the "Join Room" click that started it. Relying on the `autoPlay`
+   * attribute alone silently produced "I joined but hear nothing" for
+   * some browsers/first-time visits, so every remote stream also gets
+   * an explicit play() call here; if THAT gets rejected too (a
+   * NotAllowedError), a visible "enable sound" button appears — a
+   * real click on it always satisfies the gesture requirement.
+   */
+  function playAudioEl(id: string, el: HTMLAudioElement) {
+    audioElsRef.current[id] = el;
+    el.play().catch(() => setNeedsAudioUnlock(true));
+  }
+
+  function unlockAudio() {
+    setNeedsAudioUnlock(false);
+    Object.values(audioElsRef.current).forEach((el) => {
+      el.play().catch(() => setNeedsAudioUnlock(true));
+    });
   }
 
   function createPeerConnection(peerId: string): RTCPeerConnection {
@@ -379,7 +425,9 @@ export default function VoiceRoomView({
           playsInline
           className="hidden"
           ref={(el) => {
-            if (el && el.srcObject !== stream) el.srcObject = stream;
+            if (!el) return;
+            if (el.srcObject !== stream) el.srcObject = stream;
+            playAudioEl(id, el);
           }}
         />
       ))}
@@ -481,6 +529,17 @@ export default function VoiceRoomView({
 
         {phase === "joined" && (
           <>
+            {needsAudioUnlock && (
+              <motion.button
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={unlockAudio}
+                className="rounded-full bg-accent-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-accent-500/25"
+              >
+                {t("enableSound")}
+              </motion.button>
+            )}
             <div className="grid w-full max-w-md grid-cols-3 gap-4 sm:grid-cols-4">
               <AnimatePresence initial={false}>
                 {memberList.map((m) => {

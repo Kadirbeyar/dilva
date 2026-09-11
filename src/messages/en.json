@@ -221,6 +221,7 @@
     "joinPrompt": "Tap join to turn on your mic and enter the room.",
     "joinButton": "Join Room",
     "connecting": "Connecting…",
+    "enableSound": "Enable sound",
     "micDenied": "Microphone access was denied",
     "tryAgain": "Try Again",
     "roomFull": "This room is full right now",
