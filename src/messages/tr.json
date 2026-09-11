@@ -198,7 +198,14 @@
     "today": "Bugün",
     "yesterday": "Dün",
     "onlineNow": "Şu an çevrimiçi",
-    "systemAccountNoReply": "Dilva Team'e yanıt veremezsiniz."
+    "systemAccountNoReply": "Dilva Team'e yanıt veremezsiniz.",
+    "muteConversation": "Sohbeti sessize al",
+    "unmuteConversation": "Sessizi kaldır",
+    "attachPhoto": "Fotoğraf gönder",
+    "photoMessage": "Fotoğraf",
+    "photoTypeError": "Lütfen bir resim dosyası seçin",
+    "photoSizeError": "Görsel çok büyük (maksimum 15MB)",
+    "photoModerationError": "Bu fotoğraf gönderilemedi"
   },
   "profile": {
     "editProfile": "Profili düzenle",

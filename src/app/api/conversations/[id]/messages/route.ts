@@ -111,14 +111,22 @@ export async function POST(
       return created;
     });
 
-    // Notify the other participant(s) in the conversation.
+    // Notify the other participant(s) in the conversation — except
+    // anyone who has muted this conversation (see isMuted on
+    // ConversationParticipant / /api/conversations/[id]/mute): the
+    // message row above is created either way, so a muted recipient
+    // still sees it the moment they open the chat, they just don't
+    // get a bell notification or a push for it.
     const otherParticipants = await prisma.conversationParticipant.findMany({
       where: { conversationId, userId: { not: user.id } },
-      select: { userId: true },
+      select: { userId: true, isMuted: true },
     });
-    if (otherParticipants.length > 0) {
+    const notifyTargets = otherParticipants.filter(
+      (p: (typeof otherParticipants)[number]) => !p.isMuted
+    );
+    if (notifyTargets.length > 0) {
       await prisma.notification.createMany({
-        data: otherParticipants.map((p: (typeof otherParticipants)[number]) => ({
+        data: notifyTargets.map((p: (typeof notifyTargets)[number]) => ({
           userId: p.userId,
           type: "NEW_MESSAGE" as const,
           data: { conversationId, messageId: message.id, fromUserId: user.id },
@@ -136,7 +144,7 @@ export async function POST(
       // 1-1 in this app today, so in practice this is a single call.
       const senderName = user.displayName || user.username;
       try {
-        for (const p of otherParticipants as { userId: string }[]) {
+        for (const p of notifyTargets as { userId: string }[]) {
           await sendPushToUser(p.userId, {
             title: senderName,
             body: body.type === "TEXT" ? body.content : "📎 Sent an attachment",

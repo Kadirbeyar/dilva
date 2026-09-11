@@ -17,6 +17,7 @@ export default async function ConversationPage({
     where: { conversationId_userId: { conversationId: id, userId: user.id } },
   });
   if (!membership) notFound();
+  const isMuted = Boolean(membership.isMuted);
 
   // Sequential, not Promise.all: connection_limit=1 on the pooled DB
   // connection means firing this alongside the membership check above
@@ -51,7 +52,12 @@ export default async function ConversationPage({
 
   return (
     <main className="mx-auto flex h-[calc(100dvh-0px)] max-w-2xl flex-col">
-      <ChatWindow conversationId={id} currentUserId={user.id} otherUser={otherUser} />
+      <ChatWindow
+        conversationId={id}
+        currentUserId={user.id}
+        otherUser={otherUser}
+        initialMuted={isMuted}
+      />
     </main>
   );
 }

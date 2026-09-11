@@ -8,6 +8,9 @@ import { createClient } from "@/lib/supabase/client";
 import PremiumCrown from "@/components/profile/PremiumCrown";
 import VerifiedBadge from "@/components/profile/VerifiedBadge";
 import { DILVA_TEAM_USER_ID } from "@/lib/systemAccounts";
+import { compressImage } from "@/lib/compressImage";
+
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 
 type ChatMessage = {
   id: string;
@@ -72,10 +75,13 @@ export default function ChatWindow({
   conversationId,
   currentUserId,
   otherUser,
+  initialMuted = false,
 }: {
   conversationId: string;
   currentUserId: string;
   otherUser: OtherUser | null;
+  /** This viewer's own mute state for this conversation — see /api/conversations/[id]/mute. */
+  initialMuted?: boolean;
 }) {
   const t = useTranslations("chat");
   const tc = useTranslations("common");
@@ -90,6 +96,22 @@ export default function ChatWindow({
   // pretending it's a normal contact.
   const isSystemAccount = otherUser?.id === DILVA_TEAM_USER_ID;
 
+  const [muted, setMuted] = useState(initialMuted);
+  const [mutingBusy, setMutingBusy] = useState(false);
+
+  async function toggleMute() {
+    const next = !muted;
+    setMuted(next); // optimistic — this only affects the current viewer's own notifications
+    setMutingBusy(true);
+    const res = await fetch(`/api/conversations/${conversationId}/mute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ muted: next }),
+    });
+    setMutingBusy(false);
+    if (!res.ok) setMuted(!next); // revert on failure
+  }
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -99,9 +121,12 @@ export default function ChatWindow({
   const [recording, setRecording] = useState(false);
   const [uploadingVoice, setUploadingVoice] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   // Every message id we've ever rendered (server-confirmed), so a
   // message arriving twice — once via polling, once via Realtime, or
   // once as our own optimistic echo — never gets appended twice.
@@ -343,6 +368,73 @@ export default function ChatWindow({
     setUploadingVoice(false);
   }
 
+  /**
+   * Photo messages — uploads straight to the "chat-media" Storage
+   * bucket from the browser (see prisma/sql/20_chat_mute_and_media.sql
+   * for the bucket + policies), runs the same optional moderation
+   * check used for feed photos (see PostMediaUploader.tsx), then
+   * sends a normal message with type "IMAGE" pointing at the
+   * resulting public URL.
+   */
+  async function handleImageFile(file: File) {
+    setImageError(null);
+    if (!file.type.startsWith("image/")) {
+      setImageError(t("photoTypeError"));
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setImageError(t("photoSizeError"));
+      return;
+    }
+
+    setUploadingImage(true);
+    const uploadFile = await compressImage(file, { maxDimension: 1600, quality: 0.82 });
+    const ext = uploadFile.name.split(".").pop() || "jpg";
+    const path = `${currentUserId}/${conversationId}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("chat-media")
+      .upload(path, uploadFile, { cacheControl: "3600" });
+
+    if (uploadError) {
+      setUploadingImage(false);
+      setImageError(uploadError.message);
+      return;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("chat-media").getPublicUrl(path);
+
+    try {
+      const modRes = await fetch("/api/moderation/check-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: publicUrl }),
+      });
+      const modData = modRes.ok ? await modRes.json() : { safe: true };
+      if (modData.safe === false) {
+        await supabase.storage.from("chat-media").remove([path]);
+        setUploadingImage(false);
+        setImageError(t("photoModerationError"));
+        return;
+      }
+    } catch {
+      // Fail open — see lib/moderation.ts.
+    }
+
+    const res = await fetch(`/api/conversations/${conversationId}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: t("photoMessage"), type: "IMAGE", mediaUrl: publicUrl }),
+    });
+    if (res.ok) {
+      const { message } = await res.json();
+      ingestSingle(message);
+    }
+    setUploadingImage(false);
+  }
+
   async function toggleTranslate(message: ChatMessage) {
     if (translations[message.id]) {
       setTranslations((prev) => {
@@ -432,6 +524,37 @@ export default function ChatWindow({
               </div>
             </Link>
           )}
+
+          <button
+            type="button"
+            onClick={toggleMute}
+            disabled={mutingBusy}
+            aria-pressed={muted}
+            title={muted ? t("unmuteConversation") : t("muteConversation")}
+            className={`shrink-0 rounded-full p-2 transition disabled:opacity-50 ${
+              muted
+                ? "text-brand-600 dark:text-brand-400"
+                : "text-gray-400 hover:bg-black/5 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-white/10 dark:hover:text-gray-300"
+            }`}
+          >
+            {muted ? (
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path
+                  d="M8.5 8.5V6a3.5 3.5 0 0 1 6.53-1.75M15 15v1a3.5 3.5 0 0 1-6-2.45V10M19 10v2a7 7 0 0 1-1.02 3.63M12 19v3M8 22h8M3 3l18 18"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path
+                  d="M9 10v2a3 3 0 0 0 6 0v-4a3 3 0 0 0-6 0M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
         </div>
       )}
 
@@ -493,14 +616,26 @@ export default function ChatWindow({
                       ))}
                     <div className={`flex max-w-[78%] flex-col ${mine ? "items-end" : "items-start"}`}>
                       <div
-                        className={`px-3.5 py-2.5 text-sm shadow-sm ${
-                          mine
-                            ? "rounded-t-2xl rounded-bl-2xl rounded-br-md bg-gradient-to-br from-brand-500 to-brand-700 text-white"
-                            : "rounded-t-2xl rounded-br-2xl rounded-bl-md bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
-                        } ${isTempId(m.id) ? "opacity-60" : ""}`}
+                        className={
+                          m.type === "IMAGE" && m.mediaUrl
+                            ? `overflow-hidden rounded-2xl shadow-sm ${isTempId(m.id) ? "opacity-60" : ""}`
+                            : `px-3.5 py-2.5 text-sm shadow-sm ${
+                                mine
+                                  ? "rounded-t-2xl rounded-bl-2xl rounded-br-md bg-gradient-to-br from-brand-500 to-brand-700 text-white"
+                                  : "rounded-t-2xl rounded-br-2xl rounded-bl-md bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+                              } ${isTempId(m.id) ? "opacity-60" : ""}`
+                        }
                       >
                         {m.type === "AUDIO" && m.mediaUrl ? (
                           <audio controls src={m.mediaUrl} className="h-9 max-w-[220px]" />
+                        ) : m.type === "IMAGE" && m.mediaUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={m.mediaUrl}
+                            alt=""
+                            className="max-h-72 max-w-[240px] cursor-pointer object-cover"
+                            onClick={() => window.open(m.mediaUrl!, "_blank")}
+                          />
                         ) : (
                           <>
                             <p className="whitespace-pre-wrap">{translations[m.id] ?? m.content}</p>
@@ -548,7 +683,19 @@ export default function ChatWindow({
         ) : (
         <>
         {voiceError && <p className="mb-1.5 px-1 text-xs text-red-600">{voiceError}</p>}
+        {imageError && <p className="mb-1.5 px-1 text-xs text-red-600">{imageError}</p>}
         <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-1.5 py-1.5 dark:border-gray-700 dark:bg-gray-800">
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleImageFile(file);
+              e.target.value = "";
+            }}
+          />
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -557,6 +704,16 @@ export default function ChatWindow({
             disabled={recording}
             className="flex-1 bg-transparent px-3 py-1.5 outline-none disabled:opacity-60"
           />
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={() => imageInputRef.current?.click()}
+            disabled={uploadingImage}
+            title={t("attachPhoto")}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm text-gray-600 shadow-sm transition disabled:opacity-60 dark:bg-gray-700 dark:text-gray-200"
+          >
+            {uploadingImage ? "…" : "📷"}
+          </motion.button>
           <motion.button
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}

@@ -404,6 +404,13 @@ model ConversationParticipant {
   joinedAt   DateTime  @default(now())
   lastReadAt DateTime?
 
+  /// Silences bell/push notifications for future messages in this
+  /// thread, for THIS participant only — see
+  /// prisma/sql/20_chat_mute_and_media.sql and
+  /// /api/conversations/[id]/mute. Does not hide the conversation or
+  /// block the other person.
+  isMuted Boolean @default(false)
+
   @@unique([conversationId, userId])
   @@index([userId])
   @@map("conversation_participants")

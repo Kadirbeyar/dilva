@@ -198,7 +198,14 @@
     "today": "ئیرو",
     "yesterday": "دوی",
     "onlineNow": "نوکە ئۆنلاینه",
-    "systemAccountNoReply": "تو ناشێی بەرسڤا Dilva Team بدەی."
+    "systemAccountNoReply": "تو ناشێی بەرسڤا Dilva Team بدەی.",
+    "muteConversation": "بێدەنگکرنا چاتێ",
+    "unmuteConversation": "لابرنا بێدەنگیێ",
+    "attachPhoto": "وێنەیەکێ بنێرە",
+    "photoMessage": "وێنە",
+    "photoTypeError": "تکایە فایلەکێ وێنەیی هەلبژێرە",
+    "photoSizeError": "وێنە پتر مەزنه (زێدەباری 15MB)",
+    "photoModerationError": "ئەڤ وێنە نەهاتە ناردن"
   },
   "profile": {
     "editProfile": "پروفایلێ سەرڕاست بکە",

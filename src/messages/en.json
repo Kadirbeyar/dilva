@@ -198,7 +198,14 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "onlineNow": "Online now",
-    "systemAccountNoReply": "You can't reply to Dilva Team."
+    "systemAccountNoReply": "You can't reply to Dilva Team.",
+    "muteConversation": "Mute conversation",
+    "unmuteConversation": "Unmute conversation",
+    "attachPhoto": "Send a photo",
+    "photoMessage": "Photo",
+    "photoTypeError": "Please choose an image file",
+    "photoSizeError": "Image is too large (max 15MB)",
+    "photoModerationError": "This photo couldn't be sent"
   },
   "profile": {
     "editProfile": "Edit profile",

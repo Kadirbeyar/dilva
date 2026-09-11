@@ -88,7 +88,11 @@ export default async function ChatListPage() {
                     </div>
                     {last && (
                       <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                        {last.type === "AUDIO" ? `🎤 ${t("voiceMessage")}` : last.content}
+                        {last.type === "AUDIO"
+                          ? `🎤 ${t("voiceMessage")}`
+                          : last.type === "IMAGE"
+                            ? `📷 ${t("photoMessage")}`
+                            : last.content}
                       </p>
                     )}
                   </div>

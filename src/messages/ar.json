@@ -198,7 +198,14 @@
     "today": "اليوم",
     "yesterday": "الأمس",
     "onlineNow": "متصل الآن",
-    "systemAccountNoReply": "لا يمكنك الرد على Dilva Team."
+    "systemAccountNoReply": "لا يمكنك الرد على Dilva Team.",
+    "muteConversation": "كتم المحادثة",
+    "unmuteConversation": "إلغاء كتم المحادثة",
+    "attachPhoto": "إرسال صورة",
+    "photoMessage": "صورة",
+    "photoTypeError": "يرجى اختيار ملف صورة",
+    "photoSizeError": "الصورة كبيرة جدًا (الحد الأقصى 15 ميغابايت)",
+    "photoModerationError": "تعذر إرسال هذه الصورة"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
