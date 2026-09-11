@@ -56,6 +56,11 @@ export default function OnboardingPage() {
     "idle" | "checking" | "denied" | "unsupported" | "mismatch" | "match"
   >("idle");
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
+  // Captured from the same reverse-geocode lookup used to verify the
+  // country above — free extra precision for the "Nearby" map (see
+  // User.city) that used to just sit blank forever since onboarding
+  // never asked for it and nothing else in the app does either.
+  const [detectedCity, setDetectedCity] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   // Mandatory notification opt-in, mirroring the location block above:
@@ -104,6 +109,10 @@ export default function OnboardingPage() {
           const data = await res.json();
           const detected = resolveToWorldCountry(data.countryName) ?? data.countryName ?? null;
           setDetectedCountry(detected);
+          // bigdatacloud's reverse-geocode response uses "city" for
+          // most places but falls back to "locality" for smaller
+          // towns/villages that don't have a city-level entry.
+          setDetectedCity(data.city || data.locality || null);
           setLocationStatus(detected && countriesMatch(detected, country) ? "match" : "mismatch");
         } catch {
           setLocationStatus("denied");
@@ -176,6 +185,7 @@ export default function OnboardingPage() {
         bio: bio || undefined,
         avatarUrl: avatarUrl || undefined,
         country,
+        city: detectedCity || undefined,
         birthDate,
         gender: gender || undefined,
         nativeLanguages: [{ code: nativeCode }],

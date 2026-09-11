@@ -113,8 +113,19 @@ export async function POST(req: Request) {
           city: body.city,
           birthDate,
           gender: body.gender,
+          // Being discoverable on the "Nearby" map is mandatory now,
+          // not an opt-in toggle (see nearby/page.tsx) — since
+          // supplying coordinates is itself already a mandatory part
+          // of onboarding (the location-match check on this same
+          // form), there is no separate visibility step left to ask
+          // for: having coordinates at all means being visible.
           ...(body.latitude != null && body.longitude != null
-            ? { latitude: body.latitude, longitude: body.longitude, locationUpdatedAt: new Date() }
+            ? {
+                latitude: body.latitude,
+                longitude: body.longitude,
+                locationUpdatedAt: new Date(),
+                isLocationVisible: true,
+              }
             : {}),
         },
       });

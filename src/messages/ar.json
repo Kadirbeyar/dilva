@@ -266,8 +266,8 @@
     "lockedSubtitle": "يفتح Dilva Premium الخريطة المباشرة للمتعلمين من حولك.",
     "enableLocation": "شارك موقعي",
     "upgradeButton": "الترقية إلى Premium",
-    "visibilityTitle": "أظهر موقعي لمستخدمي Premium",
-    "visibilityHint": "يمكن لمستخدمي Premium رؤيتك على خريطة القرب، حتى لو لم تكن أنت من مشتركي Premium.",
+    "visibilityTitle": "أنت ظاهر لمستخدمي Premium",
+    "visibilityHint": "كل شخص على Dilva ظاهر على خريطة القرب حتى يجدك الشركاء — لا يمكن إيقاف ذلك، لكن فقط مستخدمو Premium يمكنهم رؤية الخريطة نفسها.",
     "enableLocationHint": "بمجرد تفعيل موقعك، يمكن للتطبيق إظهارك لمستخدمي Premium القريبين منك."
   },
   "admin": {

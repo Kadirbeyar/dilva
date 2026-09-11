@@ -23,7 +23,7 @@ type NearbyUser = {
   distanceKm: number;
 };
 
-type MyVisibility = { hasCoords: boolean; visible: boolean };
+type MyVisibility = { hasCoords: boolean };
 
 export default function NearbyPage() {
   const t = useTranslations("nearby");
@@ -36,10 +36,11 @@ export default function NearbyPage() {
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [users, setUsers] = useState<NearbyUser[]>([]);
 
-  // Being FOUND on the map is free for everyone — only viewing the
-  // map (the state above) is Premium-gated. Tracked separately so a
-  // non-Premium user can still turn this on and show up for Premium
-  // viewers nearby, even though `status` above stays "locked" for them.
+  // Being FOUND on the map is mandatory and free for everyone once
+  // they have coordinates — there is no per-user opt-out anymore (see
+  // the "always visible" card below). This is only tracked to decide
+  // whether to show that confirmation card at all (a user with no
+  // coordinates yet has nothing to confirm).
   const [myVisibility, setMyVisibility] = useState<MyVisibility | null>(null);
   const [savingVisibility, setSavingVisibility] = useState(false);
 
@@ -51,7 +52,6 @@ export default function NearbyPage() {
       const p = data.profile;
       setMyVisibility({
         hasCoords: p?.latitude != null && p?.longitude != null,
-        visible: Boolean(p?.isLocationVisible),
       });
     } catch {
       // Non-critical — the visibility card just stays hidden if this fails.
@@ -105,7 +105,13 @@ export default function NearbyPage() {
     }
   }
 
-  /** First-time opt-in: gets a browser geolocation fix and turns visibility on. */
+  /**
+   * Gets a browser geolocation fix and turns visibility on — the ONLY
+   * way visibility is ever set now (isLocationVisible is always true
+   * once coordinates exist; see nearby's "always visible" card below,
+   * which replaced the old on/off toggle — showing up on the map is
+   * no longer optional).
+   */
   function shareLocation() {
     setSavingVisibility(true);
     if (!navigator.geolocation) {
@@ -120,7 +126,7 @@ export default function NearbyPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ latitude, longitude, isLocationVisible: true }),
         });
-        setMyVisibility({ hasCoords: true, visible: true });
+        setMyVisibility({ hasCoords: true });
         setSavingVisibility(false);
         // Refresh in case this viewer is Premium and didn't have a
         // center yet (status was "no-location").
@@ -128,22 +134,6 @@ export default function NearbyPage() {
       },
       () => setSavingVisibility(false)
     );
-  }
-
-  /** Toggles visibility on/off once coordinates already exist — no new geolocation prompt needed. */
-  async function toggleVisibility(next: boolean) {
-    if (next && !myVisibility?.hasCoords) {
-      shareLocation();
-      return;
-    }
-    setSavingVisibility(true);
-    await fetch("/api/profile/location", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isLocationVisible: next }),
-    });
-    setMyVisibility((prev) => (prev ? { ...prev, visible: next } : prev));
-    setSavingVisibility(false);
   }
 
   useEffect(() => {
@@ -162,35 +152,26 @@ export default function NearbyPage() {
         {t("title")}
       </motion.h1>
 
-      {/* Visibility card — shown to EVERY signed-in user, Premium or
-          not, since being discoverable is free. Only the map view
-          below is Premium-gated. */}
-      {myVisibility && (
+      {/* Visibility notice — shown to EVERY signed-in user with
+          coordinates, Premium or not, since being discoverable is
+          free and — as of this version — mandatory: there is no
+          toggle to hide yourself anymore, only the map VIEW itself is
+          Premium-gated below. */}
+      {myVisibility?.hasCoords && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card-shadow mt-3 flex items-center justify-between gap-3 rounded-2xl bg-white p-4 dark:bg-gray-800"
+          className="card-shadow mt-3 flex items-center gap-3 rounded-2xl bg-white p-4 dark:bg-gray-800"
         >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+            ✓
+          </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
               {t("visibilityTitle")}
             </p>
             <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{t("visibilityHint")}</p>
           </div>
-          <button
-            onClick={() => toggleVisibility(!myVisibility.visible)}
-            disabled={savingVisibility}
-            aria-pressed={myVisibility.visible}
-            className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-50 ${
-              myVisibility.visible ? "bg-brand-600" : "bg-gray-300 dark:bg-gray-600"
-            }`}
-          >
-            <span
-              className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                myVisibility.visible ? "translate-x-6 rtl:-translate-x-6" : "translate-x-1 rtl:-translate-x-1"
-              }`}
-            />
-          </button>
         </motion.div>
       )}
 

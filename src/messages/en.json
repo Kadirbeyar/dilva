@@ -266,8 +266,8 @@
     "lockedSubtitle": "Dilva Premium unlocks the live map of learners around you.",
     "enableLocation": "Share my location",
     "upgradeButton": "Upgrade to Premium",
-    "visibilityTitle": "Show my location to Premium users",
-    "visibilityHint": "Premium users can see you on the nearby map, even if you're not Premium yourself.",
+    "visibilityTitle": "You're visible to Premium users",
+    "visibilityHint": "Everyone on Dilva is discoverable on the nearby map so partners can find you — this can't be turned off, but only Premium users can actually view the map.",
     "enableLocationHint": "Once you enable your location, the app can show you to nearby Premium users."
   },
   "admin": {
