@@ -39,24 +39,15 @@ type Phase = "idle" | "connecting" | "joined" | "mic-denied" | "room-full" | "en
 // STUN alone only works when at least one side can be reached with a
 // plain public IP:port — many home/mobile ISPs (very much including
 // carrier-grade NAT, common on mobile data) sit both sides behind NAT
-// that STUN can't punch through, so audio negotiates but no media
-// ever actually flows. Open Relay Project's free public TURN servers
-// (no signup, shared credentials — see https://www.metered.ca/tools/openrelay/)
-// are the fallback relay for exactly that case. They're a shared free
-// tier (can be slower/rate-limited under load) — fine for this app's
-// current scale; worth swapping for a paid TURN provider or a
-// self-hosted coturn if Voice Rooms sees heavy use later.
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:openrelay.metered.ca:80" },
-  { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
-  { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
-  {
-    urls: "turn:openrelay.metered.ca:443?transport=tcp",
-    username: "openrelayproject",
-    credential: "openrelayproject",
-  },
-];
+// that STUN can't punch through, so the two browsers can never agree
+// on a direct path and the connection sits at "disconnected" forever
+// — no relay, no audio, even though both people show up fine in the
+// room (that's Realtime Presence, an entirely separate system from
+// the actual audio connection). This fallback list is STUN-only,
+// which is why it only reliably works for two devices on the SAME
+// network — see /api/voice-rooms/turn-credentials for the real fix
+// (a TURN relay), fetched at join time and merged in below.
+const FALLBACK_ICE_SERVERS: RTCIceServer[] = [{ urls: "stun:stun.l.google.com:19302" }];
 // Tuned by ear against a normal speaking voice over a laptop mic, not
 // measured against a spec — good enough for "is someone talking right
 // now" as a visual hint, not for anything that needs to be precise.
@@ -110,6 +101,7 @@ export default function VoiceRoomView({
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analysersRef = useRef<Record<string, AnalyserNode>>({});
   const rafRef = useRef<number | null>(null);
+  const iceServersRef = useRef<RTCIceServer[]>(FALLBACK_ICE_SERVERS);
 
   function myPresence(isMuted: boolean) {
     return {
@@ -192,7 +184,7 @@ export default function VoiceRoomView({
     const existing = peersRef.current[peerId];
     if (existing) return existing;
 
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({ iceServers: iceServersRef.current });
     localStreamRef.current?.getTracks().forEach((track) => {
       pc.addTrack(track, localStreamRef.current!);
     });
@@ -363,6 +355,23 @@ export default function VoiceRoomView({
     audioCtxRef.current = new AudioContext();
     attachAnalyser(currentUser.id, stream);
 
+    // Fetch a real TURN relay (see /api/voice-rooms/turn-credentials)
+    // before connecting to anyone — this is what actually lets audio
+    // cross two different NATs/networks. Silently keeps the STUN-only
+    // fallback on any failure (missing config, network hiccup, etc.)
+    // rather than blocking the join.
+    try {
+      const res = await fetch("/api/voice-rooms/turn-credentials");
+      if (res.ok) {
+        const { iceServers } = await res.json();
+        if (Array.isArray(iceServers) && iceServers.length > 0) {
+          iceServersRef.current = [...FALLBACK_ICE_SERVERS, ...iceServers];
+        }
+      }
+    } catch {
+      // keep FALLBACK_ICE_SERVERS
+    }
+
     const channel = supabase.channel(`voice-room:${room.id}`, {
       config: { presence: { key: currentUser.id, enabled: true } },
     });
@@ -473,7 +482,7 @@ export default function VoiceRoomView({
   const remoteEntries = Object.entries(remoteStreamsRef.current);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden rounded-3xl border border-black/5 bg-white/80 shadow-sm backdrop-blur dark:border-white/10 dark:bg-gray-900/80">
+    <div className="glass-panel flex flex-1 flex-col overflow-hidden rounded-3xl shadow-sm">
       {/* Hidden audio sinks for every connected remote peer. */}
       {remoteEntries.map(([id, stream]) => (
         <audio
@@ -497,6 +506,14 @@ export default function VoiceRoomView({
               <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-600" />
             </span>
             {t("live")}
+            {phase === "joined" && (
+              <span className="eq-bars text-accent-500">
+                <span />
+                <span />
+                <span />
+                <span />
+              </span>
+            )}
           </p>
           <h1 className="truncate text-lg font-bold">{room.topic}</h1>
           <p className="truncate text-xs text-gray-500 dark:text-gray-400">
@@ -525,7 +542,7 @@ export default function VoiceRoomView({
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => router.push("/voice-rooms")}
-              className="mt-4 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700"
+              className="mt-4 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:brightness-110"
             >
               {t("backToList")}
             </motion.button>
@@ -540,7 +557,7 @@ export default function VoiceRoomView({
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => router.push("/voice-rooms")}
-              className="mt-4 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700"
+              className="mt-4 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:brightness-110"
             >
               {t("backToList")}
             </motion.button>
@@ -555,7 +572,7 @@ export default function VoiceRoomView({
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={joinRoom}
-              className="mt-4 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700"
+              className="mt-4 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:brightness-110"
             >
               {t("tryAgain")}
             </motion.button>
@@ -570,7 +587,7 @@ export default function VoiceRoomView({
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={joinRoom}
-              className="mt-4 rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700"
+              className="mt-4 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:brightness-110"
             >
               {t("joinButton")}
             </motion.button>
@@ -612,24 +629,28 @@ export default function VoiceRoomView({
                       className="flex flex-col items-center gap-1.5"
                     >
                       <div
-                        className={`relative h-16 w-16 overflow-hidden rounded-full bg-gray-200 ring-4 transition dark:bg-gray-700 ${
-                          speaking ? "ring-brand-500" : "ring-transparent"
+                        className={`rounded-full p-[3px] transition-all duration-300 ${
+                          speaking
+                            ? "bg-gradient-to-br from-brand-400 via-brand-500 to-accent-500 shadow-lg shadow-brand-500/30"
+                            : "bg-transparent"
                         }`}
                       >
-                        {m.avatarUrl && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={m.avatarUrl} alt="" className="h-full w-full object-cover" />
-                        )}
-                        {muted && (
-                          <span className="absolute bottom-0 end-0 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900/80 text-[10px] text-white">
-                            🔇
-                          </span>
-                        )}
-                        {m.id === room.host.id && (
-                          <span className="absolute -top-0.5 -start-0.5 rounded-full bg-brand-600 px-1 text-[9px] font-bold text-white">
-                            {t("hostBadge")}
-                          </span>
-                        )}
+                        <div className="relative h-16 w-16 overflow-hidden rounded-full bg-gray-200 ring-2 ring-white/70 dark:bg-gray-700 dark:ring-white/10">
+                          {m.avatarUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={m.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          )}
+                          {muted && (
+                            <span className="absolute bottom-0 end-0 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900/80 text-[10px] text-white">
+                              🔇
+                            </span>
+                          )}
+                          {m.id === room.host.id && (
+                            <span className="absolute -top-0.5 -start-0.5 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-1 text-[9px] font-bold text-white shadow-sm">
+                              {t("hostBadge")}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <p className="max-w-[72px] truncate text-center text-[11px] font-medium">
                         {isMe ? t("you") : m.displayName || m.username}
@@ -656,10 +677,10 @@ export default function VoiceRoomView({
                 whileTap={{ scale: 0.94 }}
                 onClick={toggleMic}
                 title={micMuted ? t("unmuteSelf") : t("muteSelf")}
-                className={`flex h-12 w-12 items-center justify-center rounded-full text-lg shadow-sm transition ${
+                className={`flex h-14 w-14 items-center justify-center rounded-full text-xl shadow-lg transition ${
                   micMuted
                     ? "bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400"
-                    : "bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300"
+                    : "bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-brand-500/30"
                 }`}
               >
                 {micMuted ? "🔇" : "🎙️"}
@@ -669,7 +690,7 @@ export default function VoiceRoomView({
                 whileTap={{ scale: 0.94 }}
                 onClick={leaveRoom}
                 title={t("leaveButton")}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-red-600 text-lg text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700"
+                className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-xl text-white shadow-lg shadow-red-600/25 transition hover:brightness-110"
               >
                 📴
               </motion.button>

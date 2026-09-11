@@ -103,3 +103,70 @@ body {
 ::selection {
   background: rgba(139, 92, 246, 0.35);
 }
+
+/* A bolder, animated sibling of .bg-mesh for screens that want a real
+   "hero" feel instead of a subtle tint — currently just Voice Rooms,
+   whose AI-mockup reference had a saturated violet-to-coral backdrop.
+   Same fixed/pointer-events:none contract as .bg-mesh so it never
+   affects layout; the slow drift keeps it from reading as a static
+   image. */
+.bg-mesh-vivid {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 15% 8%, rgba(139, 92, 246, 0.30), transparent 62%),
+    radial-gradient(50% 45% at 92% 18%, rgba(255, 122, 89, 0.26), transparent 62%),
+    radial-gradient(60% 50% at 50% 105%, rgba(124, 58, 237, 0.24), transparent 62%);
+  animation: mesh-drift 16s ease-in-out infinite;
+}
+:root.dark .bg-mesh-vivid {
+  background:
+    radial-gradient(55% 45% at 15% 8%, rgba(139, 92, 246, 0.48), transparent 62%),
+    radial-gradient(50% 45% at 92% 18%, rgba(255, 122, 89, 0.36), transparent 62%),
+    radial-gradient(60% 50% at 50% 105%, rgba(124, 58, 237, 0.4), transparent 62%);
+}
+@keyframes mesh-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(1.5%, -2%, 0) scale(1.05); }
+}
+
+/* Frosted-glass surface for cards/panels sitting on top of
+   .bg-mesh-vivid — a flat opaque bg-white/bg-gray-800 looks dead
+   against a colorful animated backdrop, this lets it show through. */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+:root.dark .glass-panel {
+  background: rgba(18, 18, 28, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Small animated equalizer bars — a lightweight stand-in for an audio
+   waveform, used next to "LIVE" indicators on voice-room UI. Color
+   comes from `currentColor` so it inherits whatever text color it's
+   placed in. */
+.eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+.eq-bars span {
+  width: 2.5px;
+  border-radius: 2px;
+  background: currentColor;
+  animation: eq-bounce 0.9s ease-in-out infinite;
+}
+.eq-bars span:nth-child(1) { animation-delay: 0s; }
+.eq-bars span:nth-child(2) { animation-delay: 0.15s; }
+.eq-bars span:nth-child(3) { animation-delay: 0.3s; }
+.eq-bars span:nth-child(4) { animation-delay: 0.45s; }
+@keyframes eq-bounce {
+  0%, 100% { height: 3px; }
+  50% { height: 10px; }
+}

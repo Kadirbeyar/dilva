@@ -24,7 +24,7 @@ export default async function VoiceRoomPage({
 
   return (
     <main className="relative mx-auto flex h-[calc(100dvh-0px)] max-w-2xl flex-col px-4 py-6">
-      <div className="bg-mesh" aria-hidden="true" />
+      <div className="bg-mesh-vivid" aria-hidden="true" />
       <VoiceRoomView
         room={{
           id: room.id,

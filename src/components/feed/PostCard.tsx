@@ -256,14 +256,16 @@ export default function PostCard({
   return (
     <motion.article
       whileHover={{ y: -2 }}
-      className="card-shadow rounded-3xl border border-black/5 bg-white p-4 transition-shadow hover:card-shadow-lift dark:border-white/5 dark:bg-gray-800"
+      className="card-shadow rounded-3xl border border-black/5 bg-white p-4 transition-shadow hover:card-shadow-lift dark:border-white/5 dark:bg-gray-800/70 dark:backdrop-blur-xl"
     >
       <Link href={`/profile/${post.author.username}` as any} className="flex items-center gap-3">
-        <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-gray-200 ring-2 ring-white dark:bg-gray-700 dark:ring-gray-800">
-          {post.author.avatarUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={post.author.avatarUrl} alt="" className="h-full w-full object-cover" />
-          )}
+        <div className="relative h-11 w-11 shrink-0 rounded-full bg-gradient-to-br from-brand-400 to-accent-500 p-[2px]">
+          <div className="h-full w-full overflow-hidden rounded-full bg-gray-200 ring-2 ring-white dark:bg-gray-700 dark:ring-gray-800">
+            {post.author.avatarUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={post.author.avatarUrl} alt="" className="h-full w-full object-cover" />
+            )}
+          </div>
           {post.author.isPremiumCached && <PremiumCrown />}
         </div>
         <div className="min-w-0">
@@ -497,7 +499,7 @@ export default function PostCard({
                 whileTap={{ scale: 0.97 }}
                 onClick={submitCorrection}
                 disabled={submitting}
-                className="mt-2 rounded-full bg-brand-600 px-4 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                className="mt-2 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-4 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-50"
               >
                 {t("submitCorrection")}
               </motion.button>
@@ -561,7 +563,7 @@ export default function PostCard({
                   whileTap={{ scale: 0.96 }}
                   onClick={submitComment}
                   disabled={postingComment || !commentDraft.trim()}
-                  className="shrink-0 rounded-full bg-brand-600 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-50"
+                  className="shrink-0 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-50"
                 >
                   {t("sendComment")}
                 </motion.button>

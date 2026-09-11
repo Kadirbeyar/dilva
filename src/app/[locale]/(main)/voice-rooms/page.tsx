@@ -7,7 +7,7 @@ export default async function VoiceRoomsPage() {
 
   return (
     <main className="relative mx-auto max-w-2xl px-4 py-8">
-      <div className="bg-mesh" aria-hidden="true" />
+      <div className="bg-mesh-vivid" aria-hidden="true" />
       <VoiceRoomsList />
     </main>
   );

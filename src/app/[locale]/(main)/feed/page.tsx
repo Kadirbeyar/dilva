@@ -81,7 +81,7 @@ export default function FeedPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.05 }}
-        className="card-shadow mt-4 rounded-2xl bg-white p-4 dark:bg-gray-800"
+        className="card-shadow mt-4 rounded-3xl border border-black/5 bg-white p-4 dark:border-white/5 dark:bg-gray-800/70 dark:backdrop-blur-xl"
       >
         <textarea
           value={content}
@@ -101,7 +101,7 @@ export default function FeedPage() {
             whileTap={{ scale: 0.96 }}
             onClick={submitPost}
             disabled={posting || !content.trim()}
-            className="rounded-full bg-brand-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-50"
+            className="rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-4 py-1.5 text-sm font-medium text-white shadow-md shadow-brand-600/20 disabled:opacity-50"
           >
             {t("post")}
           </motion.button>

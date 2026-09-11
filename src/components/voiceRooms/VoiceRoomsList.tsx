@@ -85,7 +85,7 @@ export default function VoiceRoomsList() {
       </motion.h1>
       <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t("subtitle")}</p>
 
-      <div className="card-shadow mt-5 rounded-2xl bg-white p-3 dark:bg-gray-800">
+      <div className="glass-panel card-shadow mt-5 rounded-2xl p-3">
         <div className="flex items-center gap-2">
           <input
             value={topic}
@@ -93,14 +93,14 @@ export default function VoiceRoomsList() {
             onKeyDown={(e) => e.key === "Enter" && createRoom()}
             placeholder={t("topicPlaceholder")}
             maxLength={120}
-            className="flex-1 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-gray-900"
+            className="flex-1 rounded-full border border-black/5 bg-white/60 px-4 py-2 text-sm outline-none focus:border-brand-400 dark:border-white/10 dark:bg-black/20"
           />
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={createRoom}
             disabled={creating || topic.trim().length < 3}
-            className="shrink-0 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-40"
+            className="shrink-0 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-brand-600/25 transition disabled:opacity-40"
           >
             {creating ? "…" : t("createButton")}
           </motion.button>
@@ -124,13 +124,15 @@ export default function VoiceRoomsList() {
               >
                 <button
                   onClick={() => router.push(`/voice-rooms/${room.id}` as any)}
-                  className="card-shadow flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-start transition hover:bg-brand-50/40 dark:bg-gray-800 dark:hover:bg-brand-900/10"
+                  className="glass-panel card-shadow flex w-full items-center gap-3 rounded-2xl p-3 text-start transition hover:card-shadow-lift"
                 >
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                    {room.host.avatarUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={room.host.avatarUrl} alt="" className="h-full w-full object-cover" />
-                    )}
+                  <div className="h-11 w-11 shrink-0 rounded-full bg-gradient-to-br from-brand-400 to-accent-500 p-[2px]">
+                    <div className="h-full w-full overflow-hidden rounded-full bg-gray-200 ring-2 ring-white dark:bg-gray-700 dark:ring-gray-900">
+                      {room.host.avatarUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={room.host.avatarUrl} alt="" className="h-full w-full object-cover" />
+                      )}
+                    </div>
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{room.topic}</p>
@@ -139,10 +141,12 @@ export default function VoiceRoomsList() {
                       {room.host.isPremiumCached && <VerifiedBadge size="sm" />}
                     </p>
                   </div>
-                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-75" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-600" />
+                  <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-600 to-accent-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
+                    <span className="eq-bars">
+                      <span />
+                      <span />
+                      <span />
+                      <span />
                     </span>
                     {t("live")}
                   </span>
