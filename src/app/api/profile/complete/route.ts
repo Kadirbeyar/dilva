@@ -74,8 +74,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const usernameOwner = await prisma.user.findUnique({
-      where: { username: body.username },
+    // Case-insensitive on purpose: "Ahmad" and "ahmad" must collide
+    // here, matching the functional unique index added on
+    // lower(username) in prisma/sql/17_username_login.sql — otherwise
+    // two case-variant accounts could exist that a username-based
+    // login (see /api/auth/login) could never tell apart.
+    const usernameOwner = await prisma.user.findFirst({
+      where: { username: { equals: body.username, mode: "insensitive" } },
       select: { id: true },
     });
     if (usernameOwner && usernameOwner.id !== user.id) {

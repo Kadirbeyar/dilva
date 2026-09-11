@@ -69,6 +69,7 @@
     "signIn": "Giriş yap",
     "signUp": "Hesap oluştur",
     "email": "E-posta",
+    "emailOrUsername": "E-posta veya kullanıcı adı",
     "password": "Şifre",
     "confirmPassword": "Şifreyi onayla",
     "noAccount": "Hesabın yok mu?",

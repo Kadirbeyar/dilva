@@ -131,6 +131,16 @@ model User {
   id       String @id @db.Uuid
   username String @unique @db.VarChar(30)
 
+  /// Mirrors auth.users.email (Supabase Auth owns the real value; this
+  /// is a denormalized copy kept in sync by the signup trigger — see
+  /// prisma/sql/00_auth_trigger.sql / 17_username_login.sql) purely so
+  /// the app can look up "which email does this username belong to"
+  /// for username-based login (see /api/auth/login) without a second
+  /// database/schema round trip. Never selected into any
+  /// publicly-facing API response — treat like latitude/longitude
+  /// (private, app-internal use only), not a public profile field.
+  email String? @unique @db.VarChar(255)
+
   displayName String? @db.VarChar(60)
   bio         String? @db.Text
   avatarUrl   String?

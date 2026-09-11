@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 // Signs in through the SERVER Supabase client (not the browser one) so
 // the session cookies reach the browser via a real HTTP Set-Cookie
@@ -14,9 +15,30 @@ import { createClient } from "@/lib/supabase/server";
 // signed out every time they left Dilva and reopened it. Cookies set
 // via a genuine Set-Cookie header are not subject to that cap.
 export async function POST(request: Request) {
-  const { email, password } = await request.json().catch(() => ({}));
-  if (!email || !password) {
+  const { identifier, password } = await request.json().catch(() => ({}));
+  if (!identifier || !password) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  }
+
+  // Supabase Auth only ever signs in with an email — a username typed
+  // here has to be resolved to its account's email first (via the
+  // denormalized public.users.email column, kept in sync by the
+  // signup trigger; see prisma/sql/17_username_login.sql). Looked up
+  // case-insensitively so "Ahmad"/"ahmad" both resolve to the one
+  // account that functional unique index guarantees exists.
+  let email: string = identifier;
+  if (!identifier.includes("@")) {
+    const account = await prisma.user.findFirst({
+      where: { username: { equals: identifier, mode: "insensitive" } },
+      select: { email: true },
+    });
+    // No matching username, or a pre-migration account with no email
+    // on file yet — fall through to signInWithPassword anyway so the
+    // error response is identical either way (never reveal whether a
+    // username exists via a different error).
+    if (account?.email) {
+      email = account.email;
+    }
   }
 
   const supabase = await createClient();

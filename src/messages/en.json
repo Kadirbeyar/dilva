@@ -69,6 +69,7 @@
     "signIn": "Sign in",
     "signUp": "Create account",
     "email": "Email",
+    "emailOrUsername": "Email or username",
     "password": "Password",
     "confirmPassword": "Confirm password",
     "noAccount": "Don't have an account?",

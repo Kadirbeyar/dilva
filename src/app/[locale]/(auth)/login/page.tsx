@@ -12,7 +12,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ export default function LoginPage() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     setLoading(false);
     if (!res.ok) {
@@ -65,13 +65,17 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{t("email")}</span>
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              {t("emailOrUsername")}
+            </span>
             <input
-              type="email"
+              type="text"
+              autoCapitalize="none"
+              autoCorrect="off"
               required
-              placeholder={t("email")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("emailOrUsername")}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="rounded-xl border border-gray-200 px-3.5 py-2.5 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-gray-600 dark:bg-gray-900"
             />
           </label>
