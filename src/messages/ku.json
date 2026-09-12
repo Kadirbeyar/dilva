@@ -255,7 +255,15 @@
     "viewProfile": "پروفایلێ ببینە",
     "membersTitle": "ل ناڤ ژوورێ ({count})",
     "onMicLabel": "ل سەر مایک",
-    "closeButton": "داخستن"
+    "closeButton": "داخستن",
+    "shareButton": "ژوورێ پارڤە بکە",
+    "shareTitle": "ڤی ژوورێ پارڤە بکە",
+    "copyLink": "لینکێ کۆپی بکە",
+    "linkCopied": "هاتە کۆپی کرن!",
+    "shareToFriends": "بو هەڤالەکێ ل دیلڤا بنێرە",
+    "shareEmpty": "تو هێشتا شوینا کەسی ناکەڤی",
+    "shareSent": "هاتە ناردن",
+    "shareMessage": "🎙️ وەرە ل \"{topic}\" ل دیلڤا: {url}"
   },
   "profile": {
     "editProfile": "پروفایلێ سەرڕاست بکە",
@@ -426,7 +434,8 @@
     "system": "ئاگاداری",
     "someone": "کەسەکی",
     "manualPaymentRejected": "داواکارییا دانا پارەیێ یا تە هاتە ڕەتکرن — دووبارە هەوڵ بدە یان ب رێکەکا دی بدە.",
-    "referralBonusEarned": "🎉 تو {days} روژان Premium یا خۆرایی وەردگری — بو داواکرنا هاڤاڵان!"
+    "referralBonusEarned": "🎉 تو {days} روژان Premium یا خۆرایی وەردگری — بو داواکرنا هاڤاڵان!",
+    "voiceRoomStarted": "{name} ژوورەکا دەنگی دەستپێکر: {topic}"
   },
   "install": {
     "androidTitle": "Dilva لسەر مۆبایلا خۆ دامەزرینه",

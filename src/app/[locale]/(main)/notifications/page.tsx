@@ -110,7 +110,10 @@ export default function NotificationsPage() {
                       )}
                     </span>
                     <span className="flex-1 pt-1.5">
-                      {t(MESSAGE_KEY[n.type] as any, { name: actorName(n) })}
+                      {t(MESSAGE_KEY[n.type] as any, {
+                        name: actorName(n),
+                        topic: (n.data?.topic as string) ?? "",
+                      })}
                     </span>
                     {!n.isRead && <span className="mt-2.5 h-2 w-2 shrink-0 rounded-full bg-brand-500" />}
                   </motion.div>

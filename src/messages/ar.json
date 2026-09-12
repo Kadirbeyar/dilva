@@ -255,7 +255,15 @@
     "viewProfile": "عرض الملف الشخصي",
     "membersTitle": "في هذه الغرفة ({count})",
     "onMicLabel": "على المايك",
-    "closeButton": "إغلاق"
+    "closeButton": "إغلاق",
+    "shareButton": "مشاركة الغرفة",
+    "shareTitle": "شارك هذه الغرفة",
+    "copyLink": "نسخ الرابط",
+    "linkCopied": "تم النسخ!",
+    "shareToFriends": "إرسال إلى صديق على ديلڤا",
+    "shareEmpty": "أنت لا تتابع أحداً بعد",
+    "shareSent": "تم الإرسال",
+    "shareMessage": "🎙️ انضم إلي في \"{topic}\" على ديلڤا: {url}"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
@@ -426,7 +434,8 @@
     "system": "إشعار",
     "someone": "شخص ما",
     "manualPaymentRejected": "تم رفض طلب الدفع اليدوي الخاص بك — الرجاء المحاولة مرة أخرى أو استخدام طريقة أخرى.",
-    "referralBonusEarned": "🎉 لقد حصلت على {days} يوماً من Premium مجاناً من إحالة!"
+    "referralBonusEarned": "🎉 لقد حصلت على {days} يوماً من Premium مجاناً من إحالة!",
+    "voiceRoomStarted": "بدأ {name} غرفة صوتية: {topic}"
   },
   "install": {
     "androidTitle": "ثبّت Dilva على هاتفك",

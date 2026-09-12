@@ -118,6 +118,10 @@ enum NotificationType {
   /// signup) once the referred person finishes onboarding — see
   /// lib/referral.ts.
   REFERRAL_BONUS_EARNED
+  /// Sent to everyone who follows a user, the moment that user starts
+  /// a Voice Room — invites them in. data carries { fromUserId, roomId,
+  /// topic }. See api/voice-rooms POST.
+  VOICE_ROOM_STARTED
 }
 
 // ─────────────────────────────────────────────────────────────

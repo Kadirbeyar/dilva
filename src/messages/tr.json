@@ -255,7 +255,15 @@
     "viewProfile": "Profili görüntüle",
     "membersTitle": "Bu odada ({count})",
     "onMicLabel": "Mikrofonda",
-    "closeButton": "Kapat"
+    "closeButton": "Kapat",
+    "shareButton": "Odayı paylaş",
+    "shareTitle": "Bu odayı paylaş",
+    "copyLink": "Bağlantıyı kopyala",
+    "linkCopied": "Kopyalandı!",
+    "shareToFriends": "Dilva'da bir arkadaşa gönder",
+    "shareEmpty": "Henüz kimseyi takip etmiyorsun",
+    "shareSent": "Gönderildi",
+    "shareMessage": "🎙️ \"{topic}\" odasında bana katıl - Dilva: {url}"
   },
   "profile": {
     "editProfile": "Profili düzenle",
@@ -426,7 +434,8 @@
     "system": "Bildirim",
     "someone": "Biri",
     "manualPaymentRejected": "Manuel ödeme talebiniz reddedildi — lütfen tekrar deneyin ya da başka bir yöntem kullanın.",
-    "referralBonusEarned": "🎉 Referans sayesinde {days} gün ücretsiz Premium kazandın!"
+    "referralBonusEarned": "🎉 Referans sayesinde {days} gün ücretsiz Premium kazandın!",
+    "voiceRoomStarted": "{name} bir Sesli Oda başlattı: {topic}"
   },
   "install": {
     "androidTitle": "Dilva'yı telefonuna kur",

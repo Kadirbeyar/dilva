@@ -24,7 +24,8 @@ type NotificationType =
   | "SUBSCRIPTION_EXPIRING"
   | "SYSTEM"
   | "MANUAL_PAYMENT_REJECTED"
-  | "REFERRAL_BONUS_EARNED";
+  | "REFERRAL_BONUS_EARNED"
+  | "VOICE_ROOM_STARTED";
 
 export type NotificationItem = {
   id: string;
@@ -47,6 +48,7 @@ export const MESSAGE_KEY: Record<NotificationType, string> = {
   SYSTEM: "system",
   MANUAL_PAYMENT_REJECTED: "manualPaymentRejected",
   REFERRAL_BONUS_EARNED: "referralBonusEarned",
+  VOICE_ROOM_STARTED: "voiceRoomStarted",
 };
 
 /** Where clicking a notification should take you. */
@@ -65,6 +67,8 @@ export function targetHref(n: NotificationItem): string | null {
     case "MANUAL_PAYMENT_REJECTED":
     case "REFERRAL_BONUS_EARNED":
       return "/premium";
+    case "VOICE_ROOM_STARTED":
+      return d.roomId ? `/voice-rooms/${d.roomId}` : "/voice-rooms";
     default:
       return null;
   }
@@ -195,6 +199,7 @@ export default function NotificationBell() {
                           {t(MESSAGE_KEY[n.type] as any, {
                             name: actorName(n),
                             days: (n.data?.days as number) ?? REFERRAL_BONUS_DAYS,
+                            topic: (n.data?.topic as string) ?? "",
                           })}
                         </span>
                         {!n.isRead && (

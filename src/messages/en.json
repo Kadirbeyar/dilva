@@ -255,7 +255,15 @@
     "viewProfile": "View profile",
     "membersTitle": "In this room ({count})",
     "onMicLabel": "On mic",
-    "closeButton": "Close"
+    "closeButton": "Close",
+    "shareButton": "Share room",
+    "shareTitle": "Share this room",
+    "copyLink": "Copy link",
+    "linkCopied": "Copied!",
+    "shareToFriends": "Send to a friend on Dilva",
+    "shareEmpty": "You're not following anyone yet",
+    "shareSent": "Sent",
+    "shareMessage": "🎙️ Join me in \"{topic}\" on Dilva: {url}"
   },
   "profile": {
     "editProfile": "Edit profile",
@@ -426,7 +434,8 @@
     "system": "Notification",
     "someone": "Someone",
     "manualPaymentRejected": "Your manual payment request was rejected — please try again or use another method.",
-    "referralBonusEarned": "🎉 You've earned {days} days of free Premium from a referral!"
+    "referralBonusEarned": "🎉 You've earned {days} days of free Premium from a referral!",
+    "voiceRoomStarted": "{name} started a Voice Room: {topic}"
   },
   "install": {
     "androidTitle": "Install Dilva on your phone",

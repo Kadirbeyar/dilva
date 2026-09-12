@@ -48,6 +48,14 @@ type RoomMember = {
   banned?: string[];
 };
 
+/** One row of the "share with friends" list — see /api/me/following. */
+type ShareFriend = {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
+
 type SignalKind = "offer" | "answer" | "candidate";
 type SignalPayload = { from: string; to: string; kind: SignalKind; data: unknown };
 type ChatMessage = { id: string; kind: "chat" | "system"; text: string; name?: string };
@@ -300,6 +308,18 @@ export default function VoiceRoomView({
   const [profileFollowing, setProfileFollowing] = useState<boolean | null>(null);
   const [followBusy, setFollowBusy] = useState(false);
   const [showMemberList, setShowMemberList] = useState(false);
+
+  // Sharing the room with friends — open to host AND audience alike
+  // (unlike moderation above), since inviting people in is how these
+  // rooms grow. Reuses the existing 1:1 conversation/message system
+  // (see /api/conversations/start + /api/conversations/[id]/messages)
+  // rather than a new sharing mechanism: "share" here just means
+  // "send my followees a DM with the room link".
+  const [showShareSheet, setShowShareSheet] = useState(false);
+  const [shareFollowing, setShareFollowing] = useState<ShareFriend[] | null>(null);
+  const [shareSentIds, setShareSentIds] = useState<Set<string>>(new Set());
+  const [shareBusyId, setShareBusyId] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatDraft, setChatDraft] = useState("");
@@ -1001,6 +1021,57 @@ export default function VoiceRoomView({
     }
   }
 
+  const roomUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/voice-rooms/${room.id}` : `/voice-rooms/${room.id}`;
+
+  function openShareSheet() {
+    setShowShareSheet(true);
+    setShareCopied(false);
+    if (shareFollowing == null) {
+      fetch("/api/me/following")
+        .then((r) => (r.ok ? r.json() : { users: [] }))
+        .then((d) => setShareFollowing(d.users ?? []))
+        .catch(() => setShareFollowing([]));
+    }
+  }
+
+  async function shareToFriend(friend: ShareFriend) {
+    if (shareBusyId) return;
+    setShareBusyId(friend.id);
+    try {
+      const startRes = await fetch("/api/conversations/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otherUserId: friend.id }),
+      });
+      if (!startRes.ok) return;
+      const { conversationId } = await startRes.json();
+      const text = t("shareMessage", { topic: room.topic, url: roomUrl });
+      const sendRes = await fetch(`/api/conversations/${conversationId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text, type: "TEXT" }),
+      });
+      if (sendRes.ok) {
+        setShareSentIds((prev) => new Set(prev).add(friend.id));
+      }
+    } finally {
+      setShareBusyId(null);
+    }
+  }
+
+  async function copyRoomLink() {
+    try {
+      await navigator.clipboard.writeText(roomUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      // Clipboard API can be unavailable (older WebViews, insecure
+      // context) — the link is still shown as selectable text below,
+      // so this just skips the one-tap convenience silently.
+    }
+  }
+
   // Speaking indicator — one shared rAF loop sampling every attached
   // analyser (local mic + each connected remote stream) while joined.
   useEffect(() => {
@@ -1121,6 +1192,22 @@ export default function VoiceRoomView({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {phase === "joined" && (
+            <button
+              onClick={openShareSheet}
+              title={t("shareButton")}
+              aria-label={t("shareButton")}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white transition hover:bg-black/45"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <path d="M8.6 13.5 15.4 17.5" />
+                <path d="M15.4 6.5 8.6 10.5" />
+              </svg>
+            </button>
+          )}
           {phase === "joined" && memberList.length > 0 && (
             <button
               onClick={() => setShowMemberList(true)}
@@ -1478,6 +1565,89 @@ export default function VoiceRoomView({
               <button
                 onClick={() => setShowMemberList(false)}
                 className="mt-2 w-full rounded-full border border-gray-200 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-900"
+              >
+                {t("closeButton")}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Share sheet — open to host AND audience (the share button in
+          the header renders for everyone once joined). "Sharing" here
+          means sending a Dilva DM with the room link to someone you
+          follow, or copying the link to paste anywhere — no separate
+          sharing system, it reuses /api/conversations/start + its
+          messages route. */}
+      <AnimatePresence>
+        {showShareSheet && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+            onClick={() => setShowShareSheet(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-white p-4 shadow-xl dark:bg-gray-800"
+            >
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t("shareTitle")}</p>
+
+              <button
+                onClick={copyRoomLink}
+                className="mt-3 flex w-full items-center justify-between gap-2 rounded-xl border border-gray-200 px-3 py-2.5 text-start transition hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-900"
+              >
+                <span className="truncate text-xs text-gray-500 dark:text-gray-400">{roomUrl}</span>
+                <span className="shrink-0 text-xs font-semibold text-brand-600 dark:text-brand-400">
+                  {shareCopied ? t("linkCopied") : t("copyLink")}
+                </span>
+              </button>
+
+              <p className="mt-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t("shareToFriends")}</p>
+              {shareFollowing == null ? (
+                <p className="py-6 text-center text-sm text-gray-400">…</p>
+              ) : shareFollowing.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-400">{t("shareEmpty")}</p>
+              ) : (
+                <ul className="mt-2 flex flex-col gap-1">
+                  {shareFollowing.map((f) => {
+                    const sent = shareSentIds.has(f.id);
+                    return (
+                      <li key={f.id} className="flex items-center gap-3 rounded-xl p-2">
+                        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                          {f.avatarUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={f.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          )}
+                        </div>
+                        <p className="min-w-0 flex-1 truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                          {f.displayName || f.username}
+                        </p>
+                        <button
+                          disabled={sent || shareBusyId === f.id}
+                          onClick={() => shareToFriend(f)}
+                          className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                            sent
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                              : "bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
+                          }`}
+                        >
+                          {sent ? t("shareSent") : t("sendButton")}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              <button
+                onClick={() => setShowShareSheet(false)}
+                className="mt-3 w-full rounded-full border border-gray-200 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-900"
               >
                 {t("closeButton")}
               </button>

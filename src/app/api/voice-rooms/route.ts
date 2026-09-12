@@ -63,6 +63,29 @@ export async function POST(req: Request) {
       },
     });
 
+    // Invite everyone who follows the host in — a notification per
+    // follower. Sequential with the create above (not Promise.all): the
+    // DB connection has connection_limit=1, so parallel awaits just
+    // queue anyway. Best-effort: a failure here shouldn't fail room
+    // creation, the room already exists and is usable either way.
+    try {
+      const followers = await prisma.follow.findMany({
+        where: { followingId: user.id },
+        select: { followerId: true },
+      });
+      if (followers.length > 0) {
+        await prisma.notification.createMany({
+          data: followers.map((f: { followerId: string }) => ({
+            userId: f.followerId,
+            type: "VOICE_ROOM_STARTED",
+            data: { fromUserId: user.id, roomId: room.id, topic: room.topic },
+          })),
+        });
+      }
+    } catch (notifyErr) {
+      console.error("[voice-rooms:POST] follower notify failed", notifyErr);
+    }
+
     return NextResponse.json({ room }, { status: 201 });
   } catch (err) {
     if (err instanceof AuthError) {

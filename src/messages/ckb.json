@@ -255,7 +255,15 @@
     "viewProfile": "پڕۆفایل ببینە",
     "membersTitle": "لەم ژوورەدا ({count})",
     "onMicLabel": "لەسەر مایک",
-    "closeButton": "داخستن"
+    "closeButton": "داخستن",
+    "shareButton": "ژوور بڵاوبکەرەوە",
+    "shareTitle": "ئەم ژوورە بڵاوبکەرەوە",
+    "copyLink": "لینک کۆپی بکە",
+    "linkCopied": "کۆپی کرا!",
+    "shareToFriends": "بۆ هاوڕێیەک لە دیلڤا بنێرە",
+    "shareEmpty": "تۆ هێشتا شوێنی کەست ناکەویت",
+    "shareSent": "نێردرا",
+    "shareMessage": "🎙️ وەرە بۆ \"{topic}\" لە دیلڤا: {url}"
   },
   "profile": {
     "editProfile": "پرۆفایل دەستکاری بکە",
@@ -426,7 +434,8 @@
     "system": "ئاگادارکردنەوە",
     "someone": "کەسێک",
     "manualPaymentRejected": "داواکاری پارەدانی دەستیت ڕەتکرایەوە — تکایە دووبارە هەوڵبدەرەوە یان ڕێگایەکی تر بەکاربهێنە.",
-    "referralBonusEarned": "🎉 تۆ {days} ڕۆژ Premium ی بەخۆڕایی لە ئاماژەکردنێک بەدەستهێنا!"
+    "referralBonusEarned": "🎉 تۆ {days} ڕۆژ Premium ی بەخۆڕایی لە ئاماژەکردنێک بەدەستهێنا!",
+    "voiceRoomStarted": "{name} ژوورێکی دەنگی دەستیپێکرد: {topic}"
   },
   "install": {
     "androidTitle": "Dilva لەسەر مۆبایلەکەت دابمەزرێنە",

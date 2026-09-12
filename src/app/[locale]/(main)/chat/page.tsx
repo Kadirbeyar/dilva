@@ -46,6 +46,29 @@ export default async function ChatListPage() {
     },
   });
 
+  // Unread counts per conversation — messages sent by the OTHER person
+  // that this user hasn't marked read yet (see api/conversations/[id]/read,
+  // which flips Message.isRead when the user opens a thread). Grouped in
+  // one query rather than N+1 per conversation.
+  const unreadCounts: { conversationId: string; _count: { id: number } }[] =
+    conversations.length === 0
+      ? []
+      : await prisma.message.groupBy({
+          by: ["conversationId"],
+          where: {
+            conversationId: { in: conversations.map((c: (typeof conversations)[number]) => c.id) },
+            senderId: { not: user.id },
+            isRead: false,
+          },
+          _count: { id: true },
+        });
+  const unreadByConversation = new Map(
+    unreadCounts.map((row: { conversationId: string; _count: { id: number } }) => [
+      row.conversationId,
+      row._count.id,
+    ])
+  );
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
       <h1 className="px-1 text-2xl font-bold">{t("title")}</h1>
@@ -58,6 +81,7 @@ export default async function ChatListPage() {
             const other = c.participants.find((p) => p.userId !== user.id)?.user;
             const last = c.messages[0];
             const online = other ? computeIsOnline(other) : false;
+            const unread = unreadByConversation.get(c.id) ?? 0;
             return (
               <li key={c.id}>
                 <Link
@@ -86,15 +110,28 @@ export default async function ChatListPage() {
                         </span>
                       )}
                     </div>
-                    {last && (
-                      <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                        {last.type === "AUDIO"
-                          ? `🎤 ${t("voiceMessage")}`
-                          : last.type === "IMAGE"
-                            ? `📷 ${t("photoMessage")}`
-                            : last.content}
-                      </p>
-                    )}
+                    <div className="flex items-center justify-between gap-2">
+                      {last && (
+                        <p
+                          className={`truncate text-sm ${
+                            unread > 0
+                              ? "font-semibold text-gray-900 dark:text-white"
+                              : "text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
+                          {last.type === "AUDIO"
+                            ? `🎤 ${t("voiceMessage")}`
+                            : last.type === "IMAGE"
+                              ? `📷 ${t("photoMessage")}`
+                              : last.content}
+                        </p>
+                      )}
+                      {unread > 0 && (
+                        <span className="flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full bg-brand-600 px-1.5 text-[11px] font-semibold leading-none text-white">
+                          {unread > 9 ? "9+" : unread}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </Link>
               </li>
