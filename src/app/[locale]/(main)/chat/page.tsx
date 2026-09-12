@@ -48,26 +48,31 @@ export default async function ChatListPage() {
 
   // Unread counts per conversation — messages sent by the OTHER person
   // that this user hasn't marked read yet (see api/conversations/[id]/read,
-  // which flips Message.isRead when the user opens a thread). Grouped in
-  // one query rather than N+1 per conversation.
-  const unreadCounts: { conversationId: string; _count: { id: number } }[] =
+  // which flips Message.isRead when the user opens a thread). One query
+  // for every conversation's unread messages, counted in JS rather than
+  // via prisma.message.groupBy(): groupBy's TypeScript types are a deep
+  // conditional-generic chain, and combining it with a ternary fallback
+  // (for the "no conversations yet" case) plus an explicit result type
+  // was enough to derail that inference — it type-checked fine against
+  // this project's local Prisma stub (no real database in this sandbox)
+  // but failed the real build against the actual generated client. A
+  // plain findMany + manual tally sidesteps groupBy's inference entirely
+  // and is just as cheap for the small unread counts a chat list has.
+  const unreadRows =
     conversations.length === 0
       ? []
-      : await prisma.message.groupBy({
-          by: ["conversationId"],
+      : await prisma.message.findMany({
           where: {
             conversationId: { in: conversations.map((c: (typeof conversations)[number]) => c.id) },
             senderId: { not: user.id },
             isRead: false,
           },
-          _count: { id: true },
+          select: { conversationId: true },
         });
-  const unreadByConversation = new Map(
-    unreadCounts.map((row: { conversationId: string; _count: { id: number } }) => [
-      row.conversationId,
-      row._count.id,
-    ])
-  );
+  const unreadByConversation = new Map<string, number>();
+  for (const row of unreadRows as { conversationId: string }[]) {
+    unreadByConversation.set(row.conversationId, (unreadByConversation.get(row.conversationId) ?? 0) + 1);
+  }
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
