@@ -8,7 +8,17 @@ import { requireUser, AuthError } from "@/lib/auth";
  * pick who to send a room invite to. Deliberately just `following`,
  * not `followers`: sharing with people whose posts you follow reads
  * as "share with friends", the reverse direction doesn't.
+ *
+ * `dynamic = "force-dynamic"`: this route has no dynamic URL segment,
+ * so Next.js tries to render it statically at build time; requireUser()
+ * reading the auth cookie forces it to bail to per-request rendering
+ * anyway, but without this declared up front that bail-out gets logged
+ * as a "Dynamic server usage" Error in Vercel's function logs on every
+ * call — noisy but harmless. Declaring it here tells Next.js this is
+ * dynamic from the start, so there's nothing to bail out of.
  */
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const user = await requireUser();

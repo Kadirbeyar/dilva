@@ -331,6 +331,22 @@ export default function VoiceRoomView({
   const peersRef = useRef<Record<string, RTCPeerConnection>>({});
   const remoteStreamsRef = useRef<Record<string, MediaStream>>({});
   const pendingCandidatesRef = useRef<Record<string, RTCIceCandidateInit[]>>({});
+  // "Perfect negotiation" bookkeeping — see renegotiate/handleSignal.
+  // Renegotiation (going from listener to speaker mid-call) isn't
+  // tie-broken the way the very first connection is (maybeInitiate),
+  // so it's possible for both sides of a connection to send a fresh
+  // offer at nearly the same moment — a real "sound doesn't stay"
+  // cause seen in production logs (InvalidStateError: "Failed to set
+  // remote answer sdp: Called in wrong state: stable", i.e. a stale
+  // answer arriving for an offer that already lost the race). These
+  // two refs make that recoverable instead of tearing the connection
+  // down: makingOfferRef marks a peer we currently have an
+  // outstanding local offer to, and pendingRenegotiateRef remembers a
+  // renegotiate() call that arrived while one was already in flight,
+  // so it can be replayed once that round finishes instead of being
+  // dropped on the floor or stacked on top of it.
+  const makingOfferRef = useRef<Record<string, boolean>>({});
+  const pendingRenegotiateRef = useRef<Set<string>>(new Set());
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analysersRef = useRef<Record<string, AnalyserNode>>({});
   const rafRef = useRef<number | null>(null);
@@ -426,6 +442,8 @@ export default function VoiceRoomView({
     delete remoteStreamsRef.current[peerId];
     delete pendingCandidatesRef.current[peerId];
     delete audioElsRef.current[peerId];
+    delete makingOfferRef.current[peerId];
+    pendingRenegotiateRef.current.delete(peerId);
     try {
       analysersRef.current[peerId]?.disconnect();
     } catch {
@@ -583,12 +601,31 @@ export default function VoiceRoomView({
   /** Re-negotiates an EXISTING connection after we've gone from
    * listener to speaker (see takeSeat) — adds our now-available track
    * and sends a fresh offer, which the other side's ordinary "offer"
-   * handling (below) already knows how to answer even mid-call. */
+   * handling (below) already knows how to answer even mid-call.
+   *
+   * Unlike the very first connection (maybeInitiate's id tie-break),
+   * nothing stops BOTH sides of an already-open connection from
+   * calling this around the same moment — e.g. two people taking a
+   * seat within a second of each other. If we went ahead and sent a
+   * second offer while one of ours (or the peer's) was still
+   * outstanding, whichever answer arrived second would find the
+   * connection already back at "stable" and fail with
+   * InvalidStateError — exactly the "sound doesn't stay when someone
+   * comes to the mic" symptom. So: only send when the connection is
+   * actually idle (`stable`); otherwise note that a renegotiation is
+   * owed and let it fire once the in-flight round finishes (see
+   * handleSignal, which replays this after applying an answer or
+   * offer). */
   async function renegotiate(peerId: string) {
     const pc = peersRef.current[peerId];
     if (!pc) return;
+    ensureLocalMedia(pc);
+    if (pc.signalingState !== "stable" || makingOfferRef.current[peerId]) {
+      pendingRenegotiateRef.current.add(peerId);
+      return;
+    }
     try {
-      ensureLocalMedia(pc);
+      makingOfferRef.current[peerId] = true;
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       sendSignal(peerId, "offer", offer);
@@ -602,6 +639,18 @@ export default function VoiceRoomView({
       console.log("[voice-room] renegotiate failed", peerId, err);
       cleanupPeer(peerId);
       setTimeout(() => maybeInitiate(peerId), 1500);
+    } finally {
+      makingOfferRef.current[peerId] = false;
+    }
+  }
+
+  /** Replays a renegotiate() that arrived mid-round (see above) once
+   * the connection is idle again — called after we finish applying
+   * either side of an offer/answer exchange. */
+  function flushPendingRenegotiate(peerId: string) {
+    if (pendingRenegotiateRef.current.has(peerId)) {
+      pendingRenegotiateRef.current.delete(peerId);
+      void renegotiate(peerId);
     }
   }
 
@@ -656,12 +705,31 @@ export default function VoiceRoomView({
 
     if (kind === "offer") {
       const pc = createPeerConnection(from);
+      // Glare: an offer arrived while WE also have one outstanding to
+      // the same peer (both sides renegotiated within the same
+      // instant — see renegotiate's comment). Resolve it the same
+      // deterministic way maybeInitiate picks who offers first: the
+      // lower user id is "impolite" and keeps its own offer, ignoring
+      // this one (the other side will ignore ours and accept the
+      // retry that follows); the higher id is "polite" and backs its
+      // own offer off via rollback so it can accept this one instead.
+      // Without this, one side stays stuck expecting an answer that
+      // will never legally arrive.
+      const collision = makingOfferRef.current[from] || pc.signalingState !== "stable";
+      const polite = currentUser.id > from;
+      if (collision && !polite) {
+        return;
+      }
       try {
+        if (collision) {
+          await pc.setLocalDescription({ type: "rollback" });
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(data as RTCSessionDescriptionInit));
         await flushPendingCandidates(from, pc);
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         sendSignal(from, "answer", answer);
+        flushPendingRenegotiate(from);
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log("[voice-room] answering offer failed", from, err);
@@ -671,9 +739,19 @@ export default function VoiceRoomView({
     } else if (kind === "answer") {
       const pc = peersRef.current[from];
       if (pc) {
+        if (pc.signalingState !== "have-local-offer") {
+          // A stale answer for an offer that already lost a glare (we
+          // rolled it back above) or was already resolved by an
+          // earlier answer — the connection itself is fine, this
+          // message just arrived too late to mean anything. Applying
+          // it would throw ("wrong state: stable") and, before this
+          // fix, tore down an otherwise-healthy connection over it.
+          return;
+        }
         try {
           await pc.setRemoteDescription(new RTCSessionDescription(data as RTCSessionDescriptionInit));
           await flushPendingCandidates(from, pc);
+          flushPendingRenegotiate(from);
         } catch (err) {
           // eslint-disable-next-line no-console
           console.log("[voice-room] applying answer failed", from, err);
