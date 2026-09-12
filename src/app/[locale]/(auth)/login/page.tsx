@@ -32,7 +32,7 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (!res.ok) {
-      setError(t("signInError"));
+      setError(res.status === 429 ? tc("tooManyRequests") : t("signInError"));
       return;
     }
     const next = searchParams.get("next");
@@ -90,6 +90,12 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="rounded-xl border border-gray-200 px-3.5 py-2.5 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-gray-600 dark:bg-gray-900"
             />
+            <Link
+              href="/forgot-password"
+              className="mt-1 self-end text-xs font-medium text-brand-700 hover:underline dark:text-brand-300"
+            >
+              {t("forgotPasswordLink")}
+            </Link>
           </label>
 
           {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}

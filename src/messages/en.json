@@ -48,7 +48,9 @@
     "premiumOnly": "This is a Dilva Premium feature.",
     "wave": "Wave",
     "waveSent": "Wave sent",
-    "alreadyWaved": "You already waved today"
+    "alreadyWaved": "You already waved today",
+    "tooManyRequests": "Too many attempts — please wait a bit and try again.",
+    "backToHome": "Back to home"
   },
   "nav": {
     "feed": "Moments",
@@ -79,7 +81,19 @@
     "signUpCta": "Sign up",
     "signInError": "Incorrect email or password.",
     "signUpSuccess": "Check your email to confirm your account.",
-    "agreeToLegal": "By signing up, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+    "agreeToLegal": "By signing up, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+    "forgotPasswordLink": "Forgot password?",
+    "forgotPasswordTitle": "Reset your password",
+    "forgotPasswordHint": "Enter the email on your account and we'll send you a link to reset your password.",
+    "forgotPasswordCta": "Send reset link",
+    "forgotPasswordSent": "If that email has an account, we've sent a password reset link to it. Check your inbox.",
+    "backToSignIn": "Back to sign in",
+    "resetPasswordTitle": "Choose a new password",
+    "newPassword": "New password",
+    "resetPasswordCta": "Save new password",
+    "resetPasswordSuccess": "Your password has been changed. Redirecting you to sign in…",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordsDontMatch": "Passwords don't match."
   },
   "onboarding": {
     "title": "Set up your Dilva profile",
@@ -463,6 +477,11 @@
   "settings": {
     "pushTitle": "Push notifications",
     "pushHint": "Get notified about new messages and important Dilva announcements, even when the app isn't open.",
-    "pushDeniedHint": "You've blocked notifications for this browser — you can change that in your browser's site settings."
+    "pushDeniedHint": "You've blocked notifications for this browser — you can change that in your browser's site settings.",
+    "dangerZoneTitle": "Danger zone",
+    "deleteAccountWarning": "Deleting your account is permanent. Your profile, posts, messages, and voice room history will be gone for good — this cannot be undone.",
+    "deleteAccountButton": "Delete my account",
+    "deleteAccountConfirmHint": "Type your username ({username}) to confirm.",
+    "deleteAccountConfirmButton": "Permanently delete"
   }
 }

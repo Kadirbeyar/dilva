@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { enforceRateLimit, RateLimitError } from "@/lib/rateLimit";
+
+function clientIp(req: Request): string {
+  const fwd = req.headers.get("x-forwarded-for");
+  return fwd ? fwd.split(",")[0].trim() : "unknown";
+}
 
 // Signs in through the SERVER Supabase client (not the browser one) so
 // the session cookies reach the browser via a real HTTP Set-Cookie
@@ -18,6 +24,24 @@ export async function POST(request: Request) {
   const { identifier, password } = await request.json().catch(() => ({}));
   if (!identifier || !password) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  }
+
+  // Two limits at once: by IP (stops one machine from hammering many
+  // accounts) and by the identifier being attempted (stops many
+  // machines/IPs from brute-forcing one specific account). Generous
+  // enough that a real person mistyping their password a few times
+  // never notices.
+  try {
+    await enforceRateLimit(`login_ip:${clientIp(request)}`, 20, 300);
+    await enforceRateLimit(`login_id:${identifier.toLowerCase()}`, 8, 300);
+  } catch (err) {
+    if (err instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: "rate_limited", retryAfterSeconds: err.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(err.retryAfterSeconds) } }
+      );
+    }
+    throw err;
   }
 
   // Supabase Auth only ever signs in with an email — a username typed

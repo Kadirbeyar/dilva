@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
+import DeleteAccountSection from "@/components/settings/DeleteAccountSection";
 import AvatarUploader from "@/components/profile/AvatarUploader";
 import PushNotificationToggle from "@/components/settings/PushNotificationToggle";
 import { flagEmoji } from "@/lib/languageFlags";
@@ -397,6 +398,8 @@ export default function SettingsPage() {
           </motion.button>
         </form>
       </motion.div>
+
+      {username && <DeleteAccountSection username={username} />}
     </main>
   );
 }

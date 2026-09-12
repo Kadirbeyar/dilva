@@ -48,7 +48,7 @@ export default function SignUpPage() {
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error || t("signInError"));
+      setError(res.status === 429 ? tc("tooManyRequests") : data.error || t("signInError"));
       return;
     }
 

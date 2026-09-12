@@ -39,7 +39,7 @@ function stripLocale(pathname: string): string {
 // on EVERY navigation was adding noticeable latency across the whole
 // site, not just DB-heavy pages, so it's skipped wherever the answer
 // genuinely doesn't matter.
-const STATIC_NO_AUTH_PATHS = ["/terms", "/privacy", "/install"];
+const STATIC_NO_AUTH_PATHS = ["/terms", "/privacy", "/install", "/forgot-password", "/reset-password"];
 
 // Guest-facing pages that DO need to know whether the visitor is signed
 // in — not to gate them (a logged-out visitor sees them normally), but

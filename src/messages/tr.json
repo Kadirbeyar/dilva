@@ -48,7 +48,9 @@
     "premiumOnly": "Bu özellik Dilva Premium'a özeldir.",
     "wave": "El Salla",
     "waveSent": "Selam gönderildi",
-    "alreadyWaved": "Bugün zaten el salladın"
+    "alreadyWaved": "Bugün zaten el salladın",
+    "tooManyRequests": "Çok fazla deneme yapıldı — lütfen biraz bekleyip tekrar deneyin.",
+    "backToHome": "Ana sayfaya dön"
   },
   "nav": {
     "feed": "Anlar",
@@ -79,7 +81,19 @@
     "signUpCta": "Kayıt ol",
     "signInError": "E-posta veya şifre hatalı.",
     "signUpSuccess": "Hesabını onaylamak için e-postanı kontrol et.",
-    "agreeToLegal": "Kaydolarak <terms>Kullanım Koşulları</terms>'nı ve <privacy>Gizlilik Politikası</privacy>'nı kabul etmiş olursunuz."
+    "agreeToLegal": "Kaydolarak <terms>Kullanım Koşulları</terms>'nı ve <privacy>Gizlilik Politikası</privacy>'nı kabul etmiş olursunuz.",
+    "forgotPasswordLink": "Şifreni mi unuttun?",
+    "forgotPasswordTitle": "Şifreni sıfırla",
+    "forgotPasswordHint": "Hesabının e-posta adresini gir, sana şifreni sıfırlaman için bir bağlantı gönderelim.",
+    "forgotPasswordCta": "Sıfırlama bağlantısı gönder",
+    "forgotPasswordSent": "Bu e-postaya kayıtlı bir hesap varsa, şifre sıfırlama bağlantısı gönderildi. Gelen kutunu kontrol et.",
+    "backToSignIn": "Girişe dön",
+    "resetPasswordTitle": "Yeni bir şifre seç",
+    "newPassword": "Yeni şifre",
+    "resetPasswordCta": "Yeni şifreyi kaydet",
+    "resetPasswordSuccess": "Şifren değiştirildi. Girişe yönlendiriliyorsun…",
+    "passwordTooShort": "Şifre en az 8 karakter olmalı.",
+    "passwordsDontMatch": "Şifreler eşleşmiyor."
   },
   "onboarding": {
     "title": "Dilva profilini oluştur",
@@ -463,6 +477,11 @@
   "settings": {
     "pushTitle": "Anlık bildirimler",
     "pushHint": "Uygulama açık olmasa bile yeni mesajlar ve önemli Dilva duyuruları hakkında bildirim al.",
-    "pushDeniedHint": "Bu tarayıcı için bildirimleri engelledin — bunu tarayıcının site ayarlarından değiştirebilirsin."
+    "pushDeniedHint": "Bu tarayıcı için bildirimleri engelledin — bunu tarayıcının site ayarlarından değiştirebilirsin.",
+    "dangerZoneTitle": "Tehlikeli bölge",
+    "deleteAccountWarning": "Hesabını silmek kalıcıdır. Profilin, gönderilerin, mesajların ve sesli oda geçmişin tamamen silinir — bu geri alınamaz.",
+    "deleteAccountButton": "Hesabımı sil",
+    "deleteAccountConfirmHint": "Onaylamak için kullanıcı adını ({username}) yaz.",
+    "deleteAccountConfirmButton": "Kalıcı olarak sil"
   }
 }
