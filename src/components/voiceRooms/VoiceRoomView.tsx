@@ -443,20 +443,34 @@ export default function VoiceRoomView({
    * mic track if we currently have one (host, or seated), otherwise
    * an explicit receive-only audio slot so we can still hear the
    * other side even though we have nothing to send back. Safe to call
-   * more than once on the same connection (e.g. once at creation as a
-   * listener, again later after taking a seat) — addTrack no-ops if
-   * that exact track is already attached, and the browser upgrades
-   * the existing recvonly slot to two-way on its own once we do have
-   * something to send.
+   * more than once on the same connection — e.g. once at creation as
+   * a listener, again later after taking a seat.
+   *
+   * IMPORTANT: this connection only ever carries ONE audio
+   * transceiver in each direction we need, and it must stay that way
+   * across a later call — reusing the transceiver that's already
+   * there (renaming its track / flipping its direction) rather than
+   * calling `addTrack` a second time. Once a transceiver has been
+   * through even one offer/answer round, `addTrack` can no longer
+   * attach to it: it opens a SECOND, brand-new audio m-line instead
+   * of upgrading the existing one. That second m-line was exactly
+   * what made a room's audio break the instant someone else took a
+   * seat — the original, already-working leg got left dangling next
+   * to a duplicate one both sides now had to make sense of.
    */
   function ensureLocalMedia(pc: RTCPeerConnection) {
     const stream = localStreamRef.current;
-    if (stream) {
-      stream.getTracks().forEach((track) => {
-        const alreadyAdded = pc.getSenders().some((s) => s.track === track);
-        if (!alreadyAdded) pc.addTrack(track, stream);
-      });
-    } else if (pc.getTransceivers().length === 0) {
+    const track = stream ? stream.getAudioTracks()[0] ?? null : null;
+    const [transceiver] = pc.getTransceivers();
+
+    if (transceiver) {
+      if (track && transceiver.sender.track !== track) {
+        transceiver.sender.replaceTrack(track);
+      }
+      transceiver.direction = track ? "sendrecv" : "recvonly";
+    } else if (track && stream) {
+      pc.addTrack(track, stream);
+    } else {
       pc.addTransceiver("audio", { direction: "recvonly" });
     }
   }
@@ -533,10 +547,17 @@ export default function VoiceRoomView({
   }
 
   async function initiateOffer(peerId: string) {
-    const pc = createPeerConnection(peerId);
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    sendSignal(peerId, "offer", offer);
+    try {
+      const pc = createPeerConnection(peerId);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      sendSignal(peerId, "offer", offer);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.log("[voice-room] initiateOffer failed", peerId, err);
+      cleanupPeer(peerId);
+      setTimeout(() => maybeInitiate(peerId), 1500);
+    }
   }
 
   /** Re-negotiates an EXISTING connection after we've gone from
@@ -546,10 +567,22 @@ export default function VoiceRoomView({
   async function renegotiate(peerId: string) {
     const pc = peersRef.current[peerId];
     if (!pc) return;
-    ensureLocalMedia(pc);
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    sendSignal(peerId, "offer", offer);
+    try {
+      ensureLocalMedia(pc);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      sendSignal(peerId, "offer", offer);
+    } catch (err) {
+      // A failed renegotiation would otherwise leave this connection
+      // stuck mid-way — tearing it down and letting maybeInitiate
+      // rebuild it fresh (with our now-current speaker status) beats
+      // leaving someone's audio silently broken for the rest of the
+      // call.
+      // eslint-disable-next-line no-console
+      console.log("[voice-room] renegotiate failed", peerId, err);
+      cleanupPeer(peerId);
+      setTimeout(() => maybeInitiate(peerId), 1500);
+    }
   }
 
   /** Whether a member currently has (or should have) something to say
@@ -603,16 +636,30 @@ export default function VoiceRoomView({
 
     if (kind === "offer") {
       const pc = createPeerConnection(from);
-      await pc.setRemoteDescription(new RTCSessionDescription(data as RTCSessionDescriptionInit));
-      await flushPendingCandidates(from, pc);
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      sendSignal(from, "answer", answer);
+      try {
+        await pc.setRemoteDescription(new RTCSessionDescription(data as RTCSessionDescriptionInit));
+        await flushPendingCandidates(from, pc);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        sendSignal(from, "answer", answer);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log("[voice-room] answering offer failed", from, err);
+        cleanupPeer(from);
+        setTimeout(() => maybeInitiate(from), 1500);
+      }
     } else if (kind === "answer") {
       const pc = peersRef.current[from];
       if (pc) {
-        await pc.setRemoteDescription(new RTCSessionDescription(data as RTCSessionDescriptionInit));
-        await flushPendingCandidates(from, pc);
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(data as RTCSessionDescriptionInit));
+          await flushPendingCandidates(from, pc);
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.log("[voice-room] applying answer failed", from, err);
+          cleanupPeer(from);
+          setTimeout(() => maybeInitiate(from), 1500);
+        }
       }
     } else if (kind === "candidate") {
       const pc = peersRef.current[from];
