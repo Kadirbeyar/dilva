@@ -315,6 +315,15 @@ export default function VoiceRoomView({
   const analysersRef = useRef<Record<string, AnalyserNode>>({});
   const rafRef = useRef<number | null>(null);
   const iceServersRef = useRef<RTCIceServer[]>(FALLBACK_ICE_SERVERS);
+  // Pending "give it a moment, then try to recover" timers, one per
+  // peer that's currently sitting in a "disconnected" WebRTC state —
+  // see the onconnectionstatechange handler below. This is the fix
+  // for "the sound sometimes just stops": a brief WiFi/mobile-data
+  // blip flips a connection to "disconnected" fairly often, and it
+  // usually recovers on its own within a couple seconds — but
+  // sometimes it just sits there silently forever unless something
+  // actively retries it, which is exactly what this does.
+  const reconnectTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Mirrors of state that the Realtime channel's event handlers need
   // to read — those handlers are attached once, inside joinRoom, when
@@ -387,6 +396,11 @@ export default function VoiceRoomView({
   }
 
   function cleanupPeer(peerId: string) {
+    const pendingReconnect = reconnectTimersRef.current[peerId];
+    if (pendingReconnect) {
+      clearTimeout(pendingReconnect);
+      delete reconnectTimersRef.current[peerId];
+    }
     peersRef.current[peerId]?.close();
     delete peersRef.current[peerId];
     delete remoteStreamsRef.current[peerId];
@@ -466,8 +480,40 @@ export default function VoiceRoomView({
     pc.onconnectionstatechange = () => {
       // eslint-disable-next-line no-console
       console.log("[voice-room] connectionState", peerId, pc.connectionState);
-      if (pc.connectionState === "failed" || pc.connectionState === "closed") {
+      const state = pc.connectionState;
+
+      if (state === "connected") {
+        // Recovered on its own (or connected for the first time) —
+        // cancel any grace-period reconnect we'd started for it.
+        const pending = reconnectTimersRef.current[peerId];
+        if (pending) {
+          clearTimeout(pending);
+          delete reconnectTimersRef.current[peerId];
+        }
+      } else if (state === "disconnected") {
+        // A network blip (WiFi handoff, a brief mobile-data drop) very
+        // often recovers by itself within a couple seconds — jumping
+        // straight to tearing the connection down on every
+        // "disconnected" would cause more audio hiccups than it
+        // fixes. Give it a short grace window instead; only if it's
+        // STILL not back after that do we treat it as dead and retry
+        // — this is what fixes audio that used to just go silent for
+        // good until someone reloaded the page.
+        if (!reconnectTimersRef.current[peerId]) {
+          reconnectTimersRef.current[peerId] = setTimeout(() => {
+            delete reconnectTimersRef.current[peerId];
+            if (peersRef.current[peerId]?.connectionState !== "connected") {
+              cleanupPeer(peerId);
+              maybeInitiate(peerId);
+            }
+          }, 8000);
+        }
+      } else if (state === "failed" || state === "closed") {
         cleanupPeer(peerId);
+        // Retry shortly rather than leaving this person silent until
+        // some unrelated presence change happens to re-trigger a
+        // connection attempt to them.
+        setTimeout(() => maybeInitiate(peerId), 1500);
       }
     };
     peersRef.current[peerId] = pc;
@@ -537,6 +583,10 @@ export default function VoiceRoomView({
   function maybeInitiate(peerId: string) {
     if (peerId === currentUser.id) return;
     if (peersRef.current[peerId]) return;
+    // Guards a delayed retry (see the "disconnected"/"failed" handling
+    // in onconnectionstatechange) landing after that person has
+    // already actually left — nothing left to reconnect to.
+    if (!membersRef.current[peerId]) return;
     const amSpeaker = isHost || mySeatRef.current != null;
     const peerSpeaks = isSpeaker(membersRef.current[peerId]);
     if (!amSpeaker && !peerSpeaks) return; // neither side has anything to send or hear
