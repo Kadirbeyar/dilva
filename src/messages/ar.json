@@ -209,7 +209,15 @@
     "photoMessage": "صورة",
     "photoTypeError": "يرجى اختيار ملف صورة",
     "photoSizeError": "الصورة كبيرة جدًا (الحد الأقصى 15 ميغابايت)",
-    "photoModerationError": "تعذر إرسال هذه الصورة"
+    "photoModerationError": "تعذر إرسال هذه الصورة",
+    "blockedError": "لا يمكنك مراسلة هذا الشخص.",
+    "icebreakers": [
+      "مرحباً! ما اللغة التي تتعلمها؟",
+      "من أين أنت؟",
+      "ما الذي تحبه في ثقافتك؟",
+      "هل لديك نصيحة لتعلم لغتي؟",
+      "ما هوايتك المفضلة؟"
+    ]
   },
   "voiceRooms": {
     "title": "غرف صوتية",
@@ -235,7 +243,14 @@
     "unmuteSelf": "إلغاء كتم الميكروفون",
     "endRoomButton": "إنهاء الغرفة",
     "hostBadge": "المضيف",
-    "you": "أنت"
+    "you": "أنت",
+    "kicked": "قام المضيف بإزالتك من هذه الغرفة",
+    "reportParticipant": "إبلاغ",
+    "removeParticipant": "إزالة من الغرفة",
+    "muteAllButton": "كتم الجميع",
+    "audienceWatching": "{count} يستمعون",
+    "sayHiPlaceholder": "قل مرحباً...",
+    "joinedRoom": "انضم {name}"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
@@ -250,7 +265,10 @@
     "followingLabel": "يتابع",
     "posts": "المنشورات",
     "noPosts": "لا توجد منشورات بعد",
-    "streak": "سلسلة {count} يوم 🔥"
+    "streak": "سلسلة {count} يوم 🔥",
+    "block": "حظر",
+    "unblock": "إلغاء الحظر",
+    "confirmBlock": "هل تريد حظر هذا الشخص؟"
   },
   "premium": {
     "title": "Dilva Premium",
@@ -307,7 +325,11 @@
     "upgradeButton": "الترقية إلى Premium",
     "visibilityTitle": "أنت ظاهر لمستخدمي Premium",
     "visibilityHint": "كل شخص على Dilva ظاهر على خريطة القرب حتى يجدك الشركاء — لا يمكن إيقاف ذلك، لكن فقط مستخدمو Premium يمكنهم رؤية الخريطة نفسها.",
-    "enableLocationHint": "بمجرد تفعيل موقعك، يمكن للتطبيق إظهارك لمستخدمي Premium القريبين منك."
+    "enableLocationHint": "بمجرد تفعيل موقعك، يمكن للتطبيق إظهارك لمستخدمي Premium القريبين منك.",
+    "filterGender": "الجنس",
+    "genderAny": "أي",
+    "genderMale": "ذكر",
+    "genderFemale": "أنثى"
   },
   "admin": {
     "title": "لوحة تحكم الإدارة",
@@ -381,7 +403,8 @@
     "reasonOther": "أخرى",
     "submit": "إرسال البلاغ",
     "submitted": "شكراً — تم الإبلاغ",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "reportUserTitle": "لماذا تُبلغ عن {name}؟"
   },
   "notifications": {
     "title": "الإشعارات",

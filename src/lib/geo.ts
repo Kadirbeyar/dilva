@@ -79,7 +79,8 @@ function seededOffset(seed: string, latitude: number): { dLat: number; dLng: num
 export async function findNearbyUsers(
   userId: string,
   radiusKm = 50,
-  limit = 50
+  limit = 50,
+  gender?: string | null
 ): Promise<NearbyUser[]> {
   const me = await prisma.user.findUnique({
     where: { id: userId },
@@ -104,6 +105,11 @@ export async function findNearbyUsers(
     ...blockedByMe.map((b: { blockedId: string }) => b.blockedId),
     ...blockedMe.map((b: { blockerId: string }) => b.blockerId),
   ];
+  // Cast both sides to text rather than the "Gender" enum type so a
+  // null filter (show everyone) and a real value both work through the
+  // same tagged-template parameter without needing Prisma.sql to
+  // conditionally splice the clause in/out.
+  const genderFilter = gender ?? null;
 
   const rows = await prisma.$queryRaw<NearbyUser[]>`
     SELECT
@@ -131,6 +137,7 @@ export async function findNearbyUsers(
       AND "latitude" IS NOT NULL
       AND "longitude" IS NOT NULL
       AND NOT ("id" = ANY(${excluded}::uuid[]))
+      AND (${genderFilter}::text IS NULL OR "gender"::text = ${genderFilter}::text)
     ORDER BY "distanceKm" ASC
     LIMIT ${limit};
   `;

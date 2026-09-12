@@ -12,32 +12,38 @@ const schema = z.object({
 });
 
 /**
- * Reports a post for admin review — see /admin's "Reported posts"
- * queue. Kept deliberately simple (no automated takedown): a report
- * just flags the post as OPEN; an admin removes it from /admin. One
- * open report per (reporter, post) — re-reporting the same post just
- * no-ops instead of piling up duplicates.
+ * Reports an account directly — same Report model/admin queue as
+ * /api/posts/[id]/report, just without a postId (an account-level
+ * report rather than one about a specific post). This is what backs
+ * the in-room "report" action in Voice Rooms (see VoiceRoomView.tsx):
+ * there's no post to attach a report to there, only a person's
+ * behavior during the call, so this generic-by-username route is what
+ * that UI calls. Kept separate from /block — blocking silences someone
+ * for the reporter only and is self-service; this just flags the
+ * account for an admin to look at, same as reporting a post does.
  */
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ username: string }> }
 ) {
   try {
     const user = await requireUser();
-    // Reporting is a moderation signal, not a public counter — without
-    // a limit, one account could flood a specific person's posts with
-    // reports (or flood the admin queue generally) with a simple loop.
-    await enforceRateLimit(`post_report:${user.id}`, 15, 3600);
-    const { id: postId } = await params;
+    // Same shape/limit as post reports — a moderation signal, not a
+    // public counter, so it needs the same flood protection.
+    await enforceRateLimit(`user_report:${user.id}`, 15, 3600);
+    const { username } = await params;
     const body = schema.parse(await req.json());
 
-    const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
-    if (!post) {
+    const target = await prisma.user.findUnique({ where: { username }, select: { id: true } });
+    if (!target) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+    if (target.id === user.id) {
+      return NextResponse.json({ error: "cannot_report_self" }, { status: 400 });
     }
 
     const existing = await prisma.report.findFirst({
-      where: { postId, reporterId: user.id, status: "OPEN" },
+      where: { reportedUserId: target.id, reporterId: user.id, postId: null, status: "OPEN" },
       select: { id: true },
     });
     if (existing) {
@@ -47,8 +53,7 @@ export async function POST(
     await prisma.report.create({
       data: {
         reporterId: user.id,
-        reportedUserId: post.authorId,
-        postId,
+        reportedUserId: target.id,
         reason: body.reason,
         details: body.details,
       },
@@ -68,7 +73,7 @@ export async function POST(
         { status: 429, headers: { "Retry-After": String(err.retryAfterSeconds) } }
       );
     }
-    console.error("[posts/[id]/report]", err);
+    console.error("[users/[username]/report]", err);
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
 }

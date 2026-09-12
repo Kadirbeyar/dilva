@@ -35,6 +35,7 @@ export default function NearbyPage() {
   >("idle");
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [users, setUsers] = useState<NearbyUser[]>([]);
+  const [gender, setGender] = useState("");
 
   // Being FOUND on the map is mandatory and free for everyone once
   // they have coordinates — there is no per-user opt-out anymore (see
@@ -58,10 +59,14 @@ export default function NearbyPage() {
     }
   }
 
-  async function loadNearby() {
+  async function loadNearby(genderFilter?: string) {
     setStatus("loading");
     try {
-      const res = await fetch("/api/nearby");
+      const params = new URLSearchParams();
+      const g = genderFilter ?? gender;
+      if (g) params.set("gender", g);
+      const qs = params.toString();
+      const res = await fetch(`/api/nearby${qs ? `?${qs}` : ""}`);
 
       // Note: a 401 here isn't necessarily a real sign-out — it can
       // also mean our server briefly failed to reach Supabase to
@@ -103,6 +108,14 @@ export default function NearbyPage() {
       // Network error reaching our own API (e.g. dev server mid-restart).
       setStatus("error");
     }
+  }
+
+  // Passes the new value directly to loadNearby instead of relying on
+  // `gender` state (which wouldn't be updated yet inside this same
+  // event handler) — avoids re-fetching with the stale previous filter.
+  function onGenderChange(value: string) {
+    setGender(value);
+    loadNearby(value);
   }
 
   /**
@@ -225,12 +238,29 @@ export default function NearbyPage() {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={loadNearby}
+            onClick={() => loadNearby()}
             className="rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700"
           >
             {tc("retry")}
           </motion.button>
         </motion.div>
+      )}
+
+      {(status === "ready" || status === "loading") && (
+        <div className="mt-3 flex items-center gap-2">
+          <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+            {t("filterGender")}
+          </label>
+          <select
+            value={gender}
+            onChange={(e) => onGenderChange(e.target.value)}
+            className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+          >
+            <option value="">{t("genderAny")}</option>
+            <option value="MALE">{t("genderMale")}</option>
+            <option value="FEMALE">{t("genderFemale")}</option>
+          </select>
+        </div>
       )}
 
       {status === "loading" && (

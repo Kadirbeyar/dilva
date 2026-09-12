@@ -7,6 +7,7 @@ import { calculateAge } from "@/lib/age";
 import LanguageFlag from "@/components/shared/LanguageFlag";
 import RecordVisit from "@/components/profile/RecordVisit";
 import FollowButton from "@/components/profile/FollowButton";
+import BlockButton from "@/components/profile/BlockButton";
 import WaveButton from "@/components/profile/WaveButton";
 import PostCard, { type FeedPost } from "@/components/feed/PostCard";
 import PremiumCrown from "@/components/profile/PremiumCrown";
@@ -44,6 +45,12 @@ export default async function PublicProfilePage({
     viewer && viewer.id !== profile.id
       ? await prisma.follow.findUnique({
           where: { followerId_followingId: { followerId: viewer.id, followingId: profile.id } },
+        })
+      : null;
+  const viewerBlocks =
+    viewer && viewer.id !== profile.id
+      ? await prisma.block.findUnique({
+          where: { blockerId_blockedId: { blockerId: viewer.id, blockedId: profile.id } },
         })
       : null;
   // Shown publicly on the profile (not just to the owner) — same
@@ -105,9 +112,12 @@ export default async function PublicProfilePage({
         </div>
 
         {viewer && viewer.id !== profile.id && (
-          <div className="flex items-center gap-2">
-            <WaveButton userId={profile.id} />
-            <FollowButton username={profile.username} initialFollowing={Boolean(viewerFollows)} />
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2">
+              <WaveButton userId={profile.id} />
+              <FollowButton username={profile.username} initialFollowing={Boolean(viewerFollows)} />
+            </div>
+            <BlockButton username={profile.username} initialBlocked={Boolean(viewerBlocks)} />
           </div>
         )}
 

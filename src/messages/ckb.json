@@ -209,7 +209,15 @@
     "photoMessage": "وێنە",
     "photoTypeError": "تکایە فایلێکی وێنە هەڵبژێرە",
     "photoSizeError": "وێنەکە زۆر گەورەیە (زۆرترین 15MB)",
-    "photoModerationError": "ئەم وێنەیە نەنێردرا"
+    "photoModerationError": "ئەم وێنەیە نەنێردرا",
+    "blockedError": "ناتوانیت پەیام بۆ ئەم کەسە بنێریت.",
+    "icebreakers": [
+      "سڵاو! چ زمانێک فێر دەبیت؟",
+      "خەڵکی کوێیت؟",
+      "چی لە کەلتووری خۆتدا زۆر خۆشتدەوێت؟",
+      "ئامۆژگاریت هەیە بۆ فێربوونی زمانەکەم؟",
+      "چیت خۆشدەوێت بۆ کات بەسەربردن؟"
+    ]
   },
   "voiceRooms": {
     "title": "ژوورەکانی دەنگ",
@@ -235,7 +243,14 @@
     "unmuteSelf": "بێدەنگی مایکرۆفۆن لابدە",
     "endRoomButton": "کۆتایی هێنان بە ژوور",
     "hostBadge": "خاوەن",
-    "you": "تۆ"
+    "you": "تۆ",
+    "kicked": "خاوەنی ژوورەکە تۆی لەم ژوورە دەرکردیت",
+    "reportParticipant": "ڕاپۆرت",
+    "removeParticipant": "دەرکردن لە ژوور",
+    "muteAllButton": "هەمووان بێدەنگ بکە",
+    "audienceWatching": "{count} کەس گوێدەگرن",
+    "sayHiPlaceholder": "سڵاو بکە...",
+    "joinedRoom": "{name} هاتە ژوورەوە"
   },
   "profile": {
     "editProfile": "پرۆفایل دەستکاری بکە",
@@ -250,7 +265,10 @@
     "followingLabel": "شوێنکەوتوویت",
     "posts": "پۆستەکان",
     "noPosts": "هێشتا پۆست نییە",
-    "streak": "زنجیرەی {count} ڕۆژ 🔥"
+    "streak": "زنجیرەی {count} ڕۆژ 🔥",
+    "block": "بلۆک بکە",
+    "unblock": "لابردنی بلۆک",
+    "confirmBlock": "ئەم کەسە بلۆک بکەیت؟"
   },
   "premium": {
     "title": "Dilva Premium",
@@ -307,7 +325,11 @@
     "upgradeButton": "بەرزکردنەوە بۆ Premium",
     "visibilityTitle": "تۆ بۆ بەکارهێنەرانی Premium دیاریت",
     "visibilityHint": "هەموو کەسێک لەسەر Dilva لەسەر نەخشەی نزیک دیارە، بۆ ئەوەی هاوبەشەکان بتوانن بتدۆزنەوە — ئەمە ناتوانرێت داخرێت، بەڵام تەنها بەکارهێنەرانی Premium دەتوانن نەخشەکە ببینن.",
-    "enableLocationHint": "کە شوێنی خۆت چالاک بکەیت، ئەپەکە دەتوانێت تۆ بۆ بەکارهێنەرانی Premium ی نزیکەوە نیشان بدات."
+    "enableLocationHint": "کە شوێنی خۆت چالاک بکەیت، ئەپەکە دەتوانێت تۆ بۆ بەکارهێنەرانی Premium ی نزیکەوە نیشان بدات.",
+    "filterGender": "ڕەگەز",
+    "genderAny": "هەرکام",
+    "genderMale": "نێر",
+    "genderFemale": "مێ"
   },
   "admin": {
     "title": "دەشبۆردی بەڕێوەبەر",
@@ -381,7 +403,8 @@
     "reasonOther": "هۆکاری تر",
     "submit": "ڕاپۆرت بنێرە",
     "submitted": "سوپاس — ڕاپۆرت کرا",
-    "cancel": "هەڵوەشاندنەوە"
+    "cancel": "هەڵوەشاندنەوە",
+    "reportUserTitle": "بۆچی {name} ڕاپۆرت دەکەیت؟"
   },
   "notifications": {
     "title": "ئاگادارکردنەوەکان",

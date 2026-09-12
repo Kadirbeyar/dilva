@@ -209,7 +209,15 @@
     "photoMessage": "Photo",
     "photoTypeError": "Please choose an image file",
     "photoSizeError": "Image is too large (max 15MB)",
-    "photoModerationError": "This photo couldn't be sent"
+    "photoModerationError": "This photo couldn't be sent",
+    "blockedError": "You can't message this person.",
+    "icebreakers": [
+      "Hi! What language are you learning?",
+      "Where are you from?",
+      "What's your favorite thing about your culture?",
+      "Any tips for learning my language?",
+      "What do you like to do for fun?"
+    ]
   },
   "voiceRooms": {
     "title": "Voice Rooms",
@@ -235,7 +243,14 @@
     "unmuteSelf": "Unmute your mic",
     "endRoomButton": "End Room",
     "hostBadge": "HOST",
-    "you": "You"
+    "you": "You",
+    "kicked": "You were removed from this room by the host",
+    "reportParticipant": "Report",
+    "removeParticipant": "Remove from room",
+    "muteAllButton": "Mute all",
+    "audienceWatching": "{count} listening",
+    "sayHiPlaceholder": "Say hi...",
+    "joinedRoom": "{name} joined"
   },
   "profile": {
     "editProfile": "Edit profile",
@@ -250,7 +265,10 @@
     "followingLabel": "Following",
     "posts": "Posts",
     "noPosts": "No posts yet",
-    "streak": "{count}-day streak 🔥"
+    "streak": "{count}-day streak 🔥",
+    "block": "Block",
+    "unblock": "Unblock",
+    "confirmBlock": "Block this person?"
   },
   "premium": {
     "title": "Dilva Premium",
@@ -307,7 +325,11 @@
     "upgradeButton": "Upgrade to Premium",
     "visibilityTitle": "You're visible to Premium users",
     "visibilityHint": "Everyone on Dilva is discoverable on the nearby map so partners can find you — this can't be turned off, but only Premium users can actually view the map.",
-    "enableLocationHint": "Once you enable your location, the app can show you to nearby Premium users."
+    "enableLocationHint": "Once you enable your location, the app can show you to nearby Premium users.",
+    "filterGender": "Gender",
+    "genderAny": "Any",
+    "genderMale": "Male",
+    "genderFemale": "Female"
   },
   "admin": {
     "title": "Admin dashboard",
@@ -381,7 +403,8 @@
     "reasonOther": "Other",
     "submit": "Submit report",
     "submitted": "Thanks — reported",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "reportUserTitle": "Why are you reporting {name}?"
   },
   "notifications": {
     "title": "Notifications",

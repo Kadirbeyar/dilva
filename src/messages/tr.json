@@ -209,7 +209,15 @@
     "photoMessage": "Fotoğraf",
     "photoTypeError": "Lütfen bir resim dosyası seçin",
     "photoSizeError": "Görsel çok büyük (maksimum 15MB)",
-    "photoModerationError": "Bu fotoğraf gönderilemedi"
+    "photoModerationError": "Bu fotoğraf gönderilemedi",
+    "blockedError": "Bu kişiye mesaj gönderemezsin.",
+    "icebreakers": [
+      "Merhaba! Hangi dili öğreniyorsun?",
+      "Nerelisin?",
+      "Kültüründe en sevdiğin şey ne?",
+      "Dilimi öğrenmem için bir tavsiyen var mı?",
+      "Boş zamanlarında ne yapmayı seversin?"
+    ]
   },
   "voiceRooms": {
     "title": "Sesli Odalar",
@@ -235,7 +243,14 @@
     "unmuteSelf": "Mikrofon sesini aç",
     "endRoomButton": "Odayı Sonlandır",
     "hostBadge": "HOST",
-    "you": "Sen"
+    "you": "Sen",
+    "kicked": "Host seni bu odadan çıkardı",
+    "reportParticipant": "Bildir",
+    "removeParticipant": "Odadan çıkar",
+    "muteAllButton": "Herkesi sessize al",
+    "audienceWatching": "{count} kişi dinliyor",
+    "sayHiPlaceholder": "Merhaba de...",
+    "joinedRoom": "{name} katıldı"
   },
   "profile": {
     "editProfile": "Profili düzenle",
@@ -250,7 +265,10 @@
     "followingLabel": "Takip Edilen",
     "posts": "Gönderiler",
     "noPosts": "Henüz gönderi yok",
-    "streak": "{count} günlük seri 🔥"
+    "streak": "{count} günlük seri 🔥",
+    "block": "Engelle",
+    "unblock": "Engeli Kaldır",
+    "confirmBlock": "Bu kişiyi engellemek istiyor musun?"
   },
   "premium": {
     "title": "Dilva Premium",
@@ -307,7 +325,11 @@
     "upgradeButton": "Premium'a Geç",
     "visibilityTitle": "Premium kullanıcılara görünürsün",
     "visibilityHint": "Dilva'daki herkes, partnerlerin sizi bulabilmesi için yakındaki haritada görünür — bu kapatılamaz, ancak haritanın kendisini yalnızca Premium kullanıcılar görebilir.",
-    "enableLocationHint": "Konumunu etkinleştirdiğinde, uygulama seni yakındaki Premium kullanıcılara gösterebilir."
+    "enableLocationHint": "Konumunu etkinleştirdiğinde, uygulama seni yakındaki Premium kullanıcılara gösterebilir.",
+    "filterGender": "Cinsiyet",
+    "genderAny": "Fark etmez",
+    "genderMale": "Erkek",
+    "genderFemale": "Kadın"
   },
   "admin": {
     "title": "Yönetici paneli",
@@ -381,7 +403,8 @@
     "reasonOther": "Diğer",
     "submit": "Bildir",
     "submitted": "Teşekkürler — bildirildi",
-    "cancel": "İptal"
+    "cancel": "İptal",
+    "reportUserTitle": "{name} kişisini neden bildiriyorsun?"
   },
   "notifications": {
     "title": "Bildirimler",

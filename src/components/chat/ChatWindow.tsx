@@ -123,6 +123,12 @@ export default function ChatWindow({
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  // Gates the icebreaker suggestions below — without this, a
+  // conversation that DOES have history would flash the suggestions
+  // for a moment before the initial fetch resolves and messages.length
+  // becomes > 0.
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
@@ -196,6 +202,7 @@ export default function ChatWindow({
       .then((d) => {
         ingestFullList(d.messages ?? []);
         applyParticipants(d.participants ?? []);
+        setHistoryLoaded(true);
       })
       .then(markRead)
       .catch(() => {});
@@ -264,6 +271,7 @@ export default function ChatWindow({
     if (!draft.trim() || recording) return;
     const content = draft;
     setDraft("");
+    setSendError(null);
 
     // Optimistic append — show the message immediately instead of
     // waiting on Realtime/polling, which is what made sent messages
@@ -295,6 +303,10 @@ export default function ChatWindow({
       } else {
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
         setDraft(content);
+        if (res.status === 403) {
+          const data = await res.json().catch(() => null);
+          if (data?.error === "blocked") setSendError(t("blockedError"));
+        }
       }
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
@@ -675,6 +687,25 @@ export default function ChatWindow({
         </div>
       </div>
 
+      {/* Icebreakers — a brand-new conversation between two strangers
+          often just sits there in awkward silence with nobody sure
+          what to say first. Tapping one fills the composer (doesn't
+          auto-send) so it can still be edited, and only shows up
+          before the FIRST message either side has ever sent. */}
+      {historyLoaded && messages.length === 0 && !isSystemAccount && (
+        <div className="scrollbar-none flex gap-2 overflow-x-auto border-t border-black/5 bg-white/90 px-3 pb-1 pt-2.5 dark:border-white/10 dark:bg-gray-900/90">
+          {(t.raw("icebreakers") as string[]).map((suggestion, i) => (
+            <button
+              key={i}
+              onClick={() => setDraft(suggestion)}
+              className="shrink-0 whitespace-nowrap rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-medium text-brand-700 transition hover:bg-brand-100 dark:border-brand-800/50 dark:bg-brand-900/20 dark:text-brand-300 dark:hover:bg-brand-900/40"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="border-t border-black/5 bg-white/90 p-2.5 backdrop-blur dark:border-white/10 dark:bg-gray-900/90">
         {isSystemAccount ? (
           <p className="rounded-full bg-gray-100 px-4 py-2.5 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
@@ -684,6 +715,7 @@ export default function ChatWindow({
         <>
         {voiceError && <p className="mb-1.5 px-1 text-xs text-red-600">{voiceError}</p>}
         {imageError && <p className="mb-1.5 px-1 text-xs text-red-600">{imageError}</p>}
+        {sendError && <p className="mb-1.5 px-1 text-xs text-red-600">{sendError}</p>}
         <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-1.5 py-1.5 dark:border-gray-700 dark:bg-gray-800">
           <input
             ref={imageInputRef}

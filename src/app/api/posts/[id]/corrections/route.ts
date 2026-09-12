@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUser, AuthError } from "@/lib/auth";
+import { enforceRateLimit, RateLimitError } from "@/lib/rateLimit";
 
 const schema = z.object({
   originalText: z.string().min(1).max(2000),
@@ -31,6 +32,10 @@ export async function POST(
 ) {
   try {
     const user = await requireUser();
+    // Generous — a genuinely active native speaker can correct a lot
+    // of posts — but still a real ceiling against a script hammering
+    // this endpoint (each one also writes a notification row).
+    await enforceRateLimit(`correction_create:${user.id}`, 40, 3600);
     const { id: postId } = await params;
     const body = schema.parse(await req.json());
 
@@ -60,6 +65,12 @@ export async function POST(
     }
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: "validation_error" }, { status: 400 });
+    }
+    if (err instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: "rate_limited", retryAfterSeconds: err.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(err.retryAfterSeconds) } }
+      );
     }
     console.error("[posts/corrections]", err);
     return NextResponse.json({ error: "server_error" }, { status: 500 });

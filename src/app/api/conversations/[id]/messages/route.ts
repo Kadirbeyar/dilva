@@ -86,6 +86,31 @@ export async function POST(
     if (isSystemConversation) {
       return NextResponse.json({ error: "system_conversation" }, { status: 403 });
     }
+
+    // /api/conversations/start already refuses to create a NEW
+    // conversation between two people with a block between them — but
+    // a block made AFTER a conversation already exists needs its own
+    // check here, otherwise the blocked side could keep sending into
+    // that older thread indefinitely. Conversations in this app are
+    // 1-1, so "the other participant" is just whoever isn't us.
+    const otherParticipant = await prisma.conversationParticipant.findFirst({
+      where: { conversationId, userId: { not: user.id } },
+      select: { userId: true },
+    });
+    if (otherParticipant) {
+      const blocked = await prisma.block.findFirst({
+        where: {
+          OR: [
+            { blockerId: user.id, blockedId: otherParticipant.userId },
+            { blockerId: otherParticipant.userId, blockedId: user.id },
+          ],
+        },
+      });
+      if (blocked) {
+        return NextResponse.json({ error: "blocked" }, { status: 403 });
+      }
+    }
+
     // 60 messages/minute per account is well above real typing speed
     // (even fast back-and-forth chat) but stops a script from
     // spamming a conversation or hammering Supabase Realtime.

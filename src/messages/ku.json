@@ -209,7 +209,15 @@
     "photoMessage": "وێنە",
     "photoTypeError": "تکایە فایلەکێ وێنەیی هەلبژێرە",
     "photoSizeError": "وێنە پتر مەزنه (زێدەباری 15MB)",
-    "photoModerationError": "ئەڤ وێنە نەهاتە ناردن"
+    "photoModerationError": "ئەڤ وێنە نەهاتە ناردن",
+    "blockedError": "تو نەشێی پەیامی بۆ ڤی کەسی بنێری.",
+    "icebreakers": [
+      "سلاڤ! تو کیجا زمانی فێر دبی؟",
+      "تو ژ کیرێ یی؟",
+      "چ شتەکێ ژ کولتورا خۆ زۆر خۆش دڤێت؟",
+      "پێشنیارەکێ بۆ فێربوونا زمانێ من هەیه؟",
+      "چ ژ کاران زۆر خۆش دڤێت بکەی؟"
+    ]
   },
   "voiceRooms": {
     "title": "ژوورێن دەنگی",
@@ -235,7 +243,14 @@
     "unmuteSelf": "بێدەنگیێ ژ مایکرۆفۆنا خۆ لابدە",
     "endRoomButton": "ژوورێ داخە",
     "hostBadge": "خودان",
-    "you": "تو"
+    "you": "تو",
+    "kicked": "خودانێ ژوورێ تو ژ ڤێ ژوورێ دەرخستی",
+    "reportParticipant": "ڕاپۆرت",
+    "removeParticipant": "ژ ژوورێ دەربخە",
+    "muteAllButton": "هەمیا بێدەنگ بکە",
+    "audienceWatching": "{count} کەس گوهدارین",
+    "sayHiPlaceholder": "سلاڤ بکە...",
+    "joinedRoom": "{name} هاته ژوورێ"
   },
   "profile": {
     "editProfile": "پروفایلێ سەرڕاست بکە",
@@ -250,7 +265,10 @@
     "followingLabel": "فۆلۆوینگ",
     "posts": "پۆستان",
     "noPosts": "هێشتا هیچ پۆستەک نەهاتیە بەلاڤکرن",
-    "streak": "{count} ڕۆژ بەردەوامی 🔥"
+    "streak": "{count} ڕۆژ بەردەوامی 🔥",
+    "block": "بلۆک بکە",
+    "unblock": "بلۆک ڕابگرە",
+    "confirmBlock": "ڤی کەسی بلۆک بکەی؟"
   },
   "premium": {
     "title": "Dilva Premium",
@@ -307,7 +325,11 @@
     "upgradeButton": "دەرباز بۆ Premium",
     "visibilityTitle": "تو بو کاربەرێن Premium یێ دیار",
     "visibilityHint": "هەمی کەس ل سەر Dilva ل نەخشا نزیکی دیارە، دا هەڤپارتنەر بشێن تە بدیتن — ئەڤ ناشێت هێته گرتن، بەلێ تنێ کاربەرێن Premium دشێن نەخشێ ببینن.",
-    "enableLocationHint": "دویف چالاککرنا شوینێ خۆ، appê دشێت تە بو یوزەرێن Premium یێن نزیکی نیشان بدەت."
+    "enableLocationHint": "دویف چالاککرنا شوینێ خۆ، appê دشێت تە بو یوزەرێن Premium یێن نزیکی نیشان بدەت.",
+    "filterGender": "ڕەگەز",
+    "genderAny": "هەر یەک",
+    "genderMale": "نێر",
+    "genderFemale": "مێ"
   },
   "admin": {
     "title": "ژمارگە (Admin)",
@@ -381,7 +403,8 @@
     "reasonOther": "شتەکێ دی",
     "submit": "ڕاپۆرتێ بهنێرە",
     "submitted": "سوپاس — هاتە ڕاپۆرتکرن",
-    "cancel": "پاشگەزبوون"
+    "cancel": "پاشگەزبوون",
+    "reportUserTitle": "بۆچی {name} ڕاپۆرت دکەی؟"
   },
   "notifications": {
     "title": "ئاگاداریان",

@@ -5,6 +5,7 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing, LOCALE_DIRECTION, type AppLocale } from "@/i18n/routing";
 import SplashScreen from "@/components/layout/SplashScreen";
+import DevToolsGuard from "@/components/layout/DevToolsGuard";
 import "../globals.css";
 
 // Inter for ltr (en/tr) content, Vazirmatn for rtl (ku, Arabic-script)
@@ -152,6 +153,7 @@ export default async function LocaleLayout({
       </head>
       <body className={dir === "rtl" ? "font-kurdish" : "font-latin"}>
         <NextIntlClientProvider messages={messages}>
+          <DevToolsGuard />
           <SplashScreen />
           {children}
         </NextIntlClientProvider>

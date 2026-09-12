@@ -3,6 +3,8 @@ import { requireUser, AuthError } from "@/lib/auth";
 import { requirePremium, PremiumRequiredError } from "@/lib/premium";
 import { findNearbyUsers } from "@/lib/geo";
 
+const VALID_GENDERS = new Set(["MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"]);
+
 /** Premium-only: list nearby language partners for the map. */
 export async function GET(req: Request) {
   try {
@@ -11,12 +13,18 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const radiusKm = Number(searchParams.get("radiusKm") ?? 50);
+    // Nearby is already all-Premium, so no separate re-check is needed
+    // here the way matches/route.ts re-checks its filters against a
+    // non-Premium caller — anyone who reached this line is already
+    // Premium (requirePremium above would have thrown otherwise).
+    const genderParam = searchParams.get("gender");
+    const gender = genderParam && VALID_GENDERS.has(genderParam) ? genderParam : null;
 
     // Coordinates here are already fuzzed per-user (see lib/geo.ts) —
     // the frontend's marker-cluster map groups/ungroups them by zoom
     // level, HelloTalk-style, without ever having anyone's exact
     // real location to plot in the first place.
-    const users = await findNearbyUsers(user.id, radiusKm);
+    const users = await findNearbyUsers(user.id, radiusKm, 50, gender);
     // Include the viewer's own last-saved coordinates so the client can
     // center the map on page load without needing a fresh geolocation
     // prompt every time (see nearby/page.tsx — previously the map never
