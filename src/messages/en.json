@@ -250,7 +250,12 @@
     "muteAllButton": "Mute all",
     "audienceWatching": "{count} listening",
     "sayHiPlaceholder": "Say hi...",
-    "joinedRoom": "{name} joined"
+    "joinedRoom": "{name} joined",
+    "sendButton": "Send",
+    "viewProfile": "View profile",
+    "membersTitle": "In this room ({count})",
+    "onMicLabel": "On mic",
+    "closeButton": "Close"
   },
   "profile": {
     "editProfile": "Edit profile",

@@ -48,7 +48,7 @@ export default function RadioPlayerButton() {
         whileTap={{ scale: 0.94 }}
         onClick={toggle}
         title={label ?? "Radio"}
-        className={`fixed bottom-20 end-4 z-40 flex h-14 w-14 items-center justify-center rounded-full text-2xl shadow-lg transition sm:bottom-6 ${
+        className={`radio-player-btn fixed bottom-20 end-4 z-40 flex h-14 w-14 items-center justify-center rounded-full text-2xl shadow-lg transition sm:bottom-6 ${
           playing
             ? "animate-pulse bg-brand-600 text-white shadow-brand-600/40"
             : "bg-white text-brand-600 shadow-black/10 dark:bg-gray-800"

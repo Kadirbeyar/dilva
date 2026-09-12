@@ -2,6 +2,39 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser, AuthError } from "@/lib/auth";
 
+/**
+ * Whether the signed-in viewer already follows this username — used
+ * by places that need to show a correct Follow/Unfollow state without
+ * a server-rendered page around them (e.g. the profile card opened
+ * from inside a Voice Room, see VoiceRoomView.tsx's openProfile).
+ * POST below is a TOGGLE, so guessing this instead of checking first
+ * would risk silently unfollowing someone the viewer already follows.
+ */
+export async function GET(_req: Request, { params }: { params: Promise<{ username: string }> }) {
+  try {
+    const user = await requireUser();
+    const { username } = await params;
+
+    const target = await prisma.user.findUnique({ where: { username }, select: { id: true } });
+    if (!target) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+
+    const existing = await prisma.follow.findUnique({
+      where: { followerId_followingId: { followerId: user.id, followingId: target.id } },
+      select: { id: true },
+    });
+
+    return NextResponse.json({ following: Boolean(existing) });
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    console.error("[users/follow:GET]", err);
+    return NextResponse.json({ error: "server_error" }, { status: 500 });
+  }
+}
+
 /** Toggle following the given username (by the signed-in user). */
 export async function POST(
   _req: Request,

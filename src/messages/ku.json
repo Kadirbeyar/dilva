@@ -250,7 +250,12 @@
     "muteAllButton": "هەمیا بێدەنگ بکە",
     "audienceWatching": "{count} کەس گوهدارین",
     "sayHiPlaceholder": "سلاڤ بکە...",
-    "joinedRoom": "{name} هاته ژوورێ"
+    "joinedRoom": "{name} هاته ژوورێ",
+    "sendButton": "بنێرە",
+    "viewProfile": "پروفایلێ ببینە",
+    "membersTitle": "ل ناڤ ژوورێ ({count})",
+    "onMicLabel": "ل سەر مایک",
+    "closeButton": "داخستن"
   },
   "profile": {
     "editProfile": "پروفایلێ سەرڕاست بکە",

@@ -250,7 +250,12 @@
     "muteAllButton": "Herkesi sessize al",
     "audienceWatching": "{count} kişi dinliyor",
     "sayHiPlaceholder": "Merhaba de...",
-    "joinedRoom": "{name} katıldı"
+    "joinedRoom": "{name} katıldı",
+    "sendButton": "Gönder",
+    "viewProfile": "Profili görüntüle",
+    "membersTitle": "Bu odada ({count})",
+    "onMicLabel": "Mikrofonda",
+    "closeButton": "Kapat"
   },
   "profile": {
     "editProfile": "Profili düzenle",

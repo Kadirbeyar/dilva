@@ -250,7 +250,12 @@
     "muteAllButton": "كتم الجميع",
     "audienceWatching": "{count} يستمعون",
     "sayHiPlaceholder": "قل مرحباً...",
-    "joinedRoom": "انضم {name}"
+    "joinedRoom": "انضم {name}",
+    "sendButton": "إرسال",
+    "viewProfile": "عرض الملف الشخصي",
+    "membersTitle": "في هذه الغرفة ({count})",
+    "onMicLabel": "على المايك",
+    "closeButton": "إغلاق"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",

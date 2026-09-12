@@ -200,3 +200,16 @@ body {
     radial-gradient(1.2px 1.2px at 14% 88%, rgba(255, 255, 255, 0.3) 50%, transparent 52%),
     radial-gradient(1.6px 1.6px at 72% 72%, rgba(255, 255, 255, 0.35) 50%, transparent 52%);
 }
+
+/* Raises the app-wide floating radio button (see RadioPlayerButton.tsx)
+   out of the way of a Voice Room's own chat composer, which otherwise
+   sits in that exact same bottom corner while a room is live — see
+   the "voice-room-active" body class toggled from VoiceRoomView.tsx. */
+body.voice-room-active .radio-player-btn {
+  bottom: 9.5rem;
+}
+@media (min-width: 640px) {
+  body.voice-room-active .radio-player-btn {
+    bottom: 6.5rem;
+  }
+}

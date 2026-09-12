@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { RealtimePresenceState } from "@supabase/supabase-js";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type RoomHost = {
@@ -114,6 +114,7 @@ function VoiceSeat({
   speaking,
   isMe,
   onTapEmpty,
+  onTapOccupant,
   seatBusy = false,
   onReport,
   onKick,
@@ -127,6 +128,11 @@ function VoiceSeat({
   speaking: boolean;
   isMe: boolean;
   onTapEmpty?: () => void;
+  /** Tapping someone ELSE's occupied seat — opens their mini profile
+   * card (see the parent's `openProfile`), never fired for your own
+   * seat (that has no card to show; the mic-toggle button below the
+   * ring is the only action on your own seat). */
+  onTapOccupant?: () => void;
   seatBusy?: boolean;
   onReport?: () => void;
   onKick?: () => void;
@@ -140,11 +146,14 @@ function VoiceSeat({
     if (seatBusy) return;
     if (!member) {
       onTapEmpty?.();
+    } else if (!isMe) {
+      onTapOccupant?.();
     }
-    // Tapping your OWN occupied seat is handled by the mic-toggle
-    // button rendered separately below the ring (see the parent) —
-    // kept as an explicit button rather than overloading this tap so
-    // it's never ambiguous with reporting/removing someone else.
+    // Tapping your OWN occupied seat does nothing here — the
+    // mic-toggle button rendered separately below the ring (see the
+    // parent) is the only action on your own seat, kept as an
+    // explicit button so it's never ambiguous with viewing/reporting
+    // someone else.
   }
 
   return (
@@ -154,7 +163,7 @@ function VoiceSeat({
     >
       <button
         onClick={handleTap}
-        disabled={Boolean(member) || seatBusy}
+        disabled={seatBusy || (member ? isMe : !onTapEmpty)}
         className={`rounded-full p-[3px] transition-all duration-300 ${
           speaking
             ? "bg-gradient-to-br from-amber-300 via-orange-400 to-pink-500 shadow-lg shadow-orange-500/40"
@@ -249,6 +258,7 @@ export default function VoiceRoomView({
 }) {
   const t = useTranslations("voiceRooms");
   const tr = useTranslations("report");
+  const tp = useTranslations("profile");
   const router = useRouter();
   const supabase = createClient();
   const isHost = room.host.id === currentUser.id;
@@ -277,6 +287,19 @@ export default function VoiceRoomView({
   const [reportDetails, setReportDetails] = useState("");
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [reportedIds, setReportedIds] = useState<Set<string>>(new Set());
+
+  // Tapping someone's seat (or their row in the full member list below)
+  // opens a small profile card — who they are, "View profile" (in a
+  // new tab, so the call in THIS tab keeps running instead of being
+  // torn down by navigating away), and Follow/Unfollow. `following`
+  // is null while we haven't checked the real status yet — shown as a
+  // brief loading state rather than guessing, since the follow
+  // endpoint is a TOGGLE: guessing wrong would silently unfollow
+  // someone the viewer already follows.
+  const [profileTarget, setProfileTarget] = useState<RoomMember | null>(null);
+  const [profileFollowing, setProfileFollowing] = useState<boolean | null>(null);
+  const [followBusy, setFollowBusy] = useState(false);
+  const [showMemberList, setShowMemberList] = useState(false);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatDraft, setChatDraft] = useState("");
@@ -853,6 +876,34 @@ export default function VoiceRoomView({
     }
   }
 
+  function openProfile(member: RoomMember) {
+    setProfileTarget(member);
+    setProfileFollowing(null);
+    fetch(`/api/users/${member.username}/follow`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setProfileFollowing(Boolean(d?.following)))
+      .catch(() => setProfileFollowing(false));
+  }
+
+  async function toggleFollowTarget() {
+    if (!profileTarget || followBusy || profileFollowing == null) return;
+    setFollowBusy(true);
+    setProfileFollowing((v) => !v); // optimistic — corrected below on failure
+    try {
+      const res = await fetch(`/api/users/${profileTarget.username}/follow`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setProfileFollowing(Boolean(data.following));
+      } else {
+        setProfileFollowing((v) => !v);
+      }
+    } catch {
+      setProfileFollowing((v) => !v);
+    } finally {
+      setFollowBusy(false);
+    }
+  }
+
   // Speaking indicator — one shared rAF loop sampling every attached
   // analyser (local mic + each connected remote stream) while joined.
   useEffect(() => {
@@ -890,6 +941,22 @@ export default function VoiceRoomView({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The app-wide floating radio button (see RadioPlayerButton.tsx)
+  // normally sits low enough to clear the bottom nav on every other
+  // page — but this component's own chat composer sits in that same
+  // corner while a room is live, so the two would otherwise overlap.
+  // Flagging <body> here (rather than teaching RadioPlayerButton
+  // about voice rooms directly) keeps the two components decoupled —
+  // see the "body.voice-room-active .radio-player-btn" rule in
+  // globals.css for the actual repositioning.
+  useEffect(() => {
+    if (phase !== "joined") return;
+    document.body.classList.add("voice-room-active");
+    return () => {
+      document.body.classList.remove("voice-room-active");
+    };
+  }, [phase]);
 
   const memberList = Object.values(members);
   const seatOccupants: Record<number, RoomMember> = {};
@@ -958,7 +1025,10 @@ export default function VoiceRoomView({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {phase === "joined" && memberList.length > 0 && (
-            <div className="flex items-center gap-1.5 rounded-full bg-black/30 px-2 py-1">
+            <button
+              onClick={() => setShowMemberList(true)}
+              className="flex items-center gap-1.5 rounded-full bg-black/30 px-2 py-1 transition hover:bg-black/45"
+            >
               <div className="flex -space-x-2">
                 {memberList.slice(0, 3).map((m) => (
                   <div
@@ -973,7 +1043,7 @@ export default function VoiceRoomView({
                 ))}
               </div>
               <span className="text-xs font-semibold text-white">{memberList.length}</span>
-            </div>
+            </button>
           )}
           {isHost && phase === "joined" && (
             <button
@@ -1089,6 +1159,7 @@ export default function VoiceRoomView({
                     big
                     speaking={speakingIds.has(hostDisplay.id)}
                     isMe={isHost}
+                    onTapOccupant={!isHost ? () => openProfile(hostDisplay) : undefined}
                     onReport={
                       !isHost && !reportedIds.has(hostDisplay.id) ? () => setReportTarget(hostDisplay) : undefined
                     }
@@ -1113,6 +1184,7 @@ export default function VoiceRoomView({
                         speaking={occupant ? speakingIds.has(occupant.id) : false}
                         isMe={isMe}
                         onTapEmpty={() => takeSeat(seatNumber)}
+                        onTapOccupant={occupant && !isMe ? () => openProfile(occupant) : undefined}
                         seatBusy={seatBusySeat === seatNumber}
                         onReport={
                           occupant && !isMe && !reportedIds.has(occupant.id)
@@ -1129,9 +1201,7 @@ export default function VoiceRoomView({
             </div>
 
             {seatError && <p className="text-center text-xs text-red-300">{seatError}</p>}
-            {audienceCount > 0 && (
-              <p className="text-center text-[11px] text-white/50">{t("audienceWatching", { count: audienceCount })}</p>
-            )}
+            <p className="text-center text-[11px] text-white/50">{t("audienceWatching", { count: audienceCount })}</p>
 
             {(isHost || mySeat != null) && (
               <motion.button
@@ -1172,6 +1242,18 @@ export default function VoiceRoomView({
                   maxLength={200}
                   className="min-w-0 flex-1 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-white placeholder-white/40 outline-none focus:border-amber-300/60"
                 />
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={sendChat}
+                  disabled={!chatDraft.trim()}
+                  title={t("sendButton")}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-pink-500 text-white shadow-lg shadow-orange-500/25 transition disabled:opacity-40"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 12l18-9-9 18-2-7-7-2z" />
+                  </svg>
+                </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.94 }}
@@ -1235,6 +1317,136 @@ export default function VoiceRoomView({
                 className="mt-2 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400"
               >
                 {tr("cancel")}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Full member list — opened by tapping the avatar-stack/count
+          badge in the header. Lists everyone currently present (host,
+          seated speakers, and plain audience alike); tapping a row
+          opens the same profile card a seat tap does (see
+          openProfile). */}
+      <AnimatePresence>
+        {showMemberList && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+            onClick={() => setShowMemberList(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-white p-4 shadow-xl dark:bg-gray-800"
+            >
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                {t("membersTitle", { count: memberList.length })}
+              </p>
+              <ul className="mt-3 flex flex-col gap-1">
+                {memberList.map((m) => (
+                  <li key={m.id}>
+                    <button
+                      onClick={() => {
+                        setShowMemberList(false);
+                        if (m.id !== currentUser.id) openProfile(m);
+                      }}
+                      className="flex w-full items-center gap-3 rounded-xl p-2 text-start transition hover:bg-gray-50 dark:hover:bg-gray-900"
+                    >
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                        {m.avatarUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={m.avatarUrl} alt="" className="h-full w-full object-cover" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                          {m.id === currentUser.id ? t("you") : m.displayName || m.username}
+                        </p>
+                        {(m.id === room.host.id || (m.seat != null && m.seat >= 1)) && (
+                          <p className="text-xs text-brand-600 dark:text-brand-400">
+                            {m.id === room.host.id ? t("hostBadge") : t("onMicLabel")}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => setShowMemberList(false)}
+                className="mt-2 w-full rounded-full border border-gray-200 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-900"
+              >
+                {t("closeButton")}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mini profile card — who's behind a seat (or a member-list
+          row), with a "View profile" link that opens in a NEW tab on
+          purpose: navigating away in this same tab would unmount this
+          component and drop the live call (see the file header — the
+          whole WebRTC session lives and dies with this component). */}
+      <AnimatePresence>
+        {profileTarget && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            onClick={() => setProfileTarget(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-xs rounded-2xl bg-white p-4 text-center shadow-xl dark:bg-gray-800"
+            >
+              <div className="mx-auto h-16 w-16 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                {profileTarget.avatarUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profileTarget.avatarUrl} alt="" className="h-full w-full object-cover" />
+                )}
+              </div>
+              <p className="mt-2 font-semibold text-gray-800 dark:text-gray-100">
+                {profileTarget.displayName || profileTarget.username}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">@{profileTarget.username}</p>
+
+              <div className="mt-4 flex items-center gap-2">
+                <Link
+                  href={`/profile/${profileTarget.username}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 rounded-full border border-gray-200 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-900"
+                >
+                  {t("viewProfile")}
+                </Link>
+                <button
+                  onClick={toggleFollowTarget}
+                  disabled={profileFollowing == null || followBusy}
+                  className={`flex-1 rounded-full py-2 text-sm font-semibold shadow-sm transition disabled:opacity-60 ${
+                    profileFollowing
+                      ? "border border-gray-300 text-gray-700 hover:border-red-300 hover:text-red-600 dark:border-gray-600 dark:text-gray-200"
+                      : "bg-brand-600 text-white hover:bg-brand-700"
+                  }`}
+                >
+                  {profileFollowing == null ? "…" : profileFollowing ? tp("unfollow") : tp("follow")}
+                </button>
+              </div>
+              <button
+                onClick={() => setProfileTarget(null)}
+                className="mt-3 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400"
+              >
+                {t("closeButton")}
               </button>
             </motion.div>
           </motion.div>
