@@ -451,6 +451,11 @@
     "referralBonusEarned": "🎉 لقد حصلت على {days} يوماً من Premium مجاناً من إحالة!",
     "voiceRoomStarted": "بدأ {name} غرفة صوتية: {topic}"
   },
+  "radio": {
+    "pickerTitle": "اختر محطة راديو",
+    "playError": "تعذّر تشغيل البث.",
+    "closeButton": "إغلاق"
+  },
   "install": {
     "androidTitle": "ثبّت Dilva على هاتفك",
     "androidDesc": "نقرة واحدة تضيف Dilva إلى شاشتك الرئيسية كتطبيق حقيقي — دون الحاجة إلى متجر Play.",

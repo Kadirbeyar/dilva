@@ -451,6 +451,11 @@
     "referralBonusEarned": "🎉 You've earned {days} days of free Premium from a referral!",
     "voiceRoomStarted": "{name} started a Voice Room: {topic}"
   },
+  "radio": {
+    "pickerTitle": "Choose a radio station",
+    "playError": "Couldn't play the stream.",
+    "closeButton": "Close"
+  },
   "install": {
     "androidTitle": "Install Dilva on your phone",
     "androidDesc": "One tap adds Dilva to your Home Screen as a real app — no Play Store needed.",

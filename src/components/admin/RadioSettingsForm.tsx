@@ -3,22 +3,20 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { RADIO_STATIONS } from "@/lib/radioStations";
+
+type StationUrls = { ku: string; tr: string; ar: string; en: string };
 
 /**
- * Lets an admin set (or clear) the floating radio player's stream
- * URL — see components/layout/RadioPlayerButton.tsx, which is hidden
- * entirely for everyone until this is set.
+ * Lets an admin set (or clear) each of the floating radio button's
+ * four fixed-language stations — see
+ * components/layout/RadioPlayerButton.tsx, which only offers a
+ * station in its picker once its URL is set here, and hides the
+ * button entirely while all four are empty.
  */
-export default function RadioSettingsForm({
-  initialUrl,
-  initialLabel,
-}: {
-  initialUrl: string | null;
-  initialLabel: string | null;
-}) {
+export default function RadioSettingsForm({ initialUrls }: { initialUrls: StationUrls }) {
   const t = useTranslations("admin");
-  const [url, setUrl] = useState(initialUrl ?? "");
-  const [label, setLabel] = useState(initialLabel ?? "");
+  const [urls, setUrls] = useState<StationUrls>(initialUrls);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(false);
@@ -30,7 +28,12 @@ export default function RadioSettingsForm({
     const res = await fetch("/api/settings/radio", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ radioStreamUrl: url, radioLabel: label }),
+      body: JSON.stringify({
+        radioStreamUrlKu: urls.ku,
+        radioStreamUrlTr: urls.tr,
+        radioStreamUrlAr: urls.ar,
+        radioStreamUrlEn: urls.en,
+      }),
     });
     setSaving(false);
     if (res.ok) {
@@ -43,25 +46,22 @@ export default function RadioSettingsForm({
   return (
     <div className="card-shadow rounded-2xl bg-white p-5 dark:bg-gray-800">
       <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t("radioTitle")}</h2>
+      <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">{t("radioClearHint")}</p>
       <div className="mt-3 flex flex-col gap-3">
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{t("radioUrlLabel")}</span>
-          <input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://stream.example.com/radio.mp3"
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-          />
-          <span className="text-[11px] text-gray-400 dark:text-gray-500">{t("radioClearHint")}</span>
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{t("radioLabelLabel")}</span>
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-          />
-        </label>
+        {RADIO_STATIONS.map((station) => (
+          <label key={station.code} className="flex flex-col gap-1">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+              <span>{station.flag}</span>
+              {station.name}
+            </span>
+            <input
+              value={urls[station.code]}
+              onChange={(e) => setUrls((prev) => ({ ...prev, [station.code]: e.target.value }))}
+              placeholder="https://stream.example.com/radio.mp3"
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+            />
+          </label>
+        ))}
         <div className="flex items-center gap-3">
           <motion.button
             whileHover={{ scale: 1.03 }}

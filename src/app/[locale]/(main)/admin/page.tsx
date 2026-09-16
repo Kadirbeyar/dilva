@@ -178,7 +178,14 @@ export default async function AdminPage() {
 
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
         <ReportedPostsPanel initialReports={reportedPosts} />
-        <RadioSettingsForm initialUrl={appSettings.radioStreamUrl} initialLabel={appSettings.radioLabel} />
+        <RadioSettingsForm
+          initialUrls={{
+            ku: appSettings.radioStreamUrlKu ?? "",
+            tr: appSettings.radioStreamUrlTr ?? "",
+            ar: appSettings.radioStreamUrlAr ?? "",
+            en: appSettings.radioStreamUrlEn ?? "",
+          }}
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">

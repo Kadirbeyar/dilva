@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser, requireAdmin, AuthError, ForbiddenError } from "@/lib/auth";
-import { getAppSettings, setRadioSetting } from "@/lib/appSettings";
+import { getAppSettings, setRadioStations } from "@/lib/appSettings";
 
-/** Any signed-in user can read the current radio stream URL (or null if none is set yet). */
+/** Any signed-in user can read the current per-station stream URLs (each null if that station isn't set up yet). */
 export async function GET() {
   try {
     await requireUser();
@@ -18,20 +18,33 @@ export async function GET() {
   }
 }
 
+// Each of the four stations is independently optional — an empty
+// string clears that one station (hides it from the picker) without
+// touching the other three.
+const urlField = z.string().url().optional().or(z.literal(""));
 const schema = z.object({
-  radioStreamUrl: z.string().url().optional().or(z.literal("")),
-  radioLabel: z.string().max(60).optional().or(z.literal("")),
+  radioStreamUrlKu: urlField,
+  radioStreamUrlTr: urlField,
+  radioStreamUrlAr: urlField,
+  radioStreamUrlEn: urlField,
 });
 
-/** Admin-only: change (or clear) the radio stream URL shown to everyone. */
+/** Admin-only: change (or clear) any of the four station stream URLs shown to everyone. */
 export async function PATCH(req: Request) {
   try {
     await requireAdmin();
     const body = schema.parse(await req.json());
-    const updated = await setRadioSetting(body.radioStreamUrl || null, body.radioLabel || null);
+    const updated = await setRadioStations({
+      ku: body.radioStreamUrlKu || null,
+      tr: body.radioStreamUrlTr || null,
+      ar: body.radioStreamUrlAr || null,
+      en: body.radioStreamUrlEn || null,
+    });
     return NextResponse.json({
-      radioStreamUrl: updated.radioStreamUrl,
-      radioLabel: updated.radioLabel,
+      radioStreamUrlKu: updated.radioStreamUrlKu,
+      radioStreamUrlTr: updated.radioStreamUrlTr,
+      radioStreamUrlAr: updated.radioStreamUrlAr,
+      radioStreamUrlEn: updated.radioStreamUrlEn,
     });
   } catch (err) {
     if (err instanceof AuthError) {

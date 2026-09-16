@@ -676,8 +676,17 @@ model Notification {
 /// later rather than a new table per setting.
 model AppSetting {
   id             String  @id @default("singleton")
+  /// Superseded by the four per-language columns below (one station
+  /// each for Kurdish/Turkish/Arabic/English, picked from the floating
+  /// radio button's own selector) — left in place, unused, rather than
+  /// dropped, since this project has no migrations folder and a drop
+  /// isn't needed for the new columns to work.
   radioStreamUrl String?
   radioLabel     String?
+  radioStreamUrlKu String?
+  radioStreamUrlTr String?
+  radioStreamUrlAr String?
+  radioStreamUrlEn String?
 
   /// Free-text instructions shown on /premium for paying manually —
   /// bank/Qi Card details and a crypto (USDT) address/network. Kept

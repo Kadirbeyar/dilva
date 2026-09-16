@@ -451,6 +451,11 @@
     "referralBonusEarned": "🎉 تو {days} روژان Premium یا خۆرایی وەردگری — بو داواکرنا هاڤاڵان!",
     "voiceRoomStarted": "{name} ژوورەکا دەنگی دەستپێکر: {topic}"
   },
+  "radio": {
+    "pickerTitle": "ڕادیۆیەکێ هەلبژێرە",
+    "playError": "نەشیا ئەڤ لێدانێ بێتە کرن.",
+    "closeButton": "داخستن"
+  },
   "install": {
     "androidTitle": "Dilva لسەر مۆبایلا خۆ دامەزرینه",
     "androidDesc": "ب یەک دوگمەیی Dilva وەکی appەکی راستەقینه بخه سەر Home Screen ya خۆ — بێ Play Store.",

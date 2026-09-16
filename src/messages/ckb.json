@@ -451,6 +451,11 @@
     "referralBonusEarned": "🎉 تۆ {days} ڕۆژ Premium ی بەخۆڕایی لە ئاماژەکردنێک بەدەستهێنا!",
     "voiceRoomStarted": "{name} ژوورێکی دەنگی دەستیپێکرد: {topic}"
   },
+  "radio": {
+    "pickerTitle": "ڕادیۆیەک هەڵبژێرە",
+    "playError": "نەیتوانرا ئەم لێدانە بکرێت.",
+    "closeButton": "داخستن"
+  },
   "install": {
     "androidTitle": "Dilva لەسەر مۆبایلەکەت دابمەزرێنە",
     "androidDesc": "کرتەیەک Dilva وەک ئەپێکی ڕاستەقینە زیاد دەکات بۆ شاشەی سەرەکیت — بێ پێویستی بە پلەی Play.",

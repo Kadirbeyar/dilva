@@ -9,19 +9,42 @@ import { prisma } from "@/lib/prisma";
 export async function getAppSettings() {
   const row = await prisma.appSetting.findUnique({ where: { id: "singleton" } });
   return {
-    radioStreamUrl: row?.radioStreamUrl ?? null,
-    radioLabel: row?.radioLabel ?? null,
+    radioStreamUrlKu: row?.radioStreamUrlKu ?? null,
+    radioStreamUrlTr: row?.radioStreamUrlTr ?? null,
+    radioStreamUrlAr: row?.radioStreamUrlAr ?? null,
+    radioStreamUrlEn: row?.radioStreamUrlEn ?? null,
     manualPaymentBankInfo: row?.manualPaymentBankInfo ?? null,
     manualPaymentCryptoInfo: row?.manualPaymentCryptoInfo ?? null,
     manualPaymentFibInfo: row?.manualPaymentFibInfo ?? null,
   };
 }
 
-export async function setRadioSetting(radioStreamUrl: string | null, radioLabel: string | null) {
+/** Admin-set stream URL for each of the radio button's four fixed
+ * language stations — see components/layout/RadioPlayerButton.tsx's
+ * station picker and components/admin/RadioSettingsForm.tsx. Any
+ * station left null/empty just doesn't show up in the picker; the
+ * floating button itself hides entirely when all four are empty. */
+export async function setRadioStations(stations: {
+  ku: string | null;
+  tr: string | null;
+  ar: string | null;
+  en: string | null;
+}) {
   return prisma.appSetting.upsert({
     where: { id: "singleton" },
-    update: { radioStreamUrl, radioLabel },
-    create: { id: "singleton", radioStreamUrl, radioLabel },
+    update: {
+      radioStreamUrlKu: stations.ku,
+      radioStreamUrlTr: stations.tr,
+      radioStreamUrlAr: stations.ar,
+      radioStreamUrlEn: stations.en,
+    },
+    create: {
+      id: "singleton",
+      radioStreamUrlKu: stations.ku,
+      radioStreamUrlTr: stations.tr,
+      radioStreamUrlAr: stations.ar,
+      radioStreamUrlEn: stations.en,
+    },
   });
 }
 

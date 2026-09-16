@@ -451,6 +451,11 @@
     "referralBonusEarned": "🎉 Referans sayesinde {days} gün ücretsiz Premium kazandın!",
     "voiceRoomStarted": "{name} bir Sesli Oda başlattı: {topic}"
   },
+  "radio": {
+    "pickerTitle": "Bir radyo istasyonu seç",
+    "playError": "Yayın oynatılamadı.",
+    "closeButton": "Kapat"
+  },
   "install": {
     "androidTitle": "Dilva'yı telefonuna kur",
     "androidDesc": "Tek dokunuşla Dilva'yı gerçek bir uygulama gibi Ana Ekrana ekle — Play Store gerekmez.",
