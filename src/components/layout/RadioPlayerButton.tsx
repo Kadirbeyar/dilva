@@ -29,6 +29,11 @@ export default function RadioPlayerButton() {
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Mirrors activeCode for use inside the <audio> element's error
+  // handler, which closes over refs correctly but would otherwise see
+  // a stale activeCode from whenever the listener was first attached.
+  const activeCodeRef = useRef<RadioStationCode | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetch("/api/settings/radio")
@@ -44,35 +49,69 @@ export default function RadioPlayerButton() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+    };
+  }, []);
+
   const stations = urls ? RADIO_STATIONS.filter((s) => urls[s.code]) : [];
   const activeStation = stations.find((s) => s.code === activeCode);
+
+  // Cache-busted so the browser (and any intermediate cache) always
+  // opens a brand-new connection to the proxy rather than replaying a
+  // previously-ended one.
+  function proxyUrl(code: RadioStationCode) {
+    return `/api/radio-proxy?station=${code}&t=${Date.now()}`;
+  }
 
   function selectStation(code: RadioStationCode) {
     const audio = audioRef.current;
     if (!audio || !urls) return;
     setError(false);
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
 
     if (activeCode === code && playing) {
+      activeCodeRef.current = null;
       audio.pause();
       setPlaying(false);
       return;
     }
 
-    if (activeCode !== code) {
-      audio.src = urls[code] as string;
-      setActiveCode(code);
-    }
+    activeCodeRef.current = code;
+    setActiveCode(code);
+    audio.src = proxyUrl(code);
     audio
       .play()
       .then(() => setPlaying(true))
       .catch(() => setError(true));
   }
 
+  // The proxy route (see api/radio-proxy/route.ts) can only hold a
+  // connection open for so long — a Vercel serverless function has a
+  // maximum execution time, but the radio station itself never stops
+  // broadcasting. Rather than surfacing that server-side cutoff as a
+  // real error, quietly reopen a fresh proxied connection for whatever
+  // station the user still has selected and keep playing.
+  function handleAudioError() {
+    const code = activeCodeRef.current;
+    const audio = audioRef.current;
+    if (!code || !audio) return;
+    reconnectTimeoutRef.current = setTimeout(() => {
+      if (activeCodeRef.current !== code) return;
+      audio.src = proxyUrl(code);
+      audio.play().catch(() => setError(true));
+    }, 1000);
+  }
+
   if (stations.length === 0) return null;
 
   return (
     <>
-      <audio ref={audioRef} preload="none" onError={() => setError(true)} />
+      <audio ref={audioRef} preload="none" onError={handleAudioError} />
 
       <motion.button
         whileHover={{ scale: 1.08 }}
