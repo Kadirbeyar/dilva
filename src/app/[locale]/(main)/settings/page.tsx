@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import DeleteAccountSection from "@/components/settings/DeleteAccountSection";
+import ChangePasswordSection from "@/components/settings/ChangePasswordSection";
 import AvatarUploader from "@/components/profile/AvatarUploader";
 import PushNotificationToggle from "@/components/settings/PushNotificationToggle";
 import { flagEmoji } from "@/lib/languageFlags";
@@ -398,6 +399,8 @@ export default function SettingsPage() {
           </motion.button>
         </form>
       </motion.div>
+
+      <ChangePasswordSection />
 
       {username && <DeleteAccountSection username={username} />}
     </main>

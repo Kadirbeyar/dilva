@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import VerifiedBadge from "@/components/profile/VerifiedBadge";
 
 type Visitor = {
@@ -72,21 +72,31 @@ export default function VisitorsPage() {
                 initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: Math.min(i * 0.04, 0.4) }}
-                className="card-shadow flex items-center gap-3 rounded-2xl bg-white p-3 dark:bg-gray-800"
+                className="card-shadow rounded-2xl bg-white transition-shadow hover:card-shadow-lift dark:bg-gray-800"
               >
-                <div className="h-10 w-10 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                  {v.avatarUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={v.avatarUrl} alt="" className="h-full w-full object-cover" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-medium">
-                    {v.displayName || v.username}
-                    {v.isPremiumCached && <VerifiedBadge size="sm" />}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(v.visitedAt).toLocaleString()}</p>
-                </div>
+                {/* Was plain text before — tapping a visitor's name did
+                    nothing (just selected the text), with no way to
+                    actually open their profile from this list. */}
+                <Link
+                  href={`/profile/${v.username}` as any}
+                  className="flex items-center gap-3 p-3"
+                >
+                  <div className="h-10 w-10 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                    {v.avatarUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={v.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium">
+                      {v.displayName || v.username}
+                      {v.isPremiumCached && <VerifiedBadge size="sm" />}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(v.visitedAt).toLocaleString()}
+                    </p>
+                  </div>
+                </Link>
               </motion.li>
             ))}
           </AnimatePresence>
