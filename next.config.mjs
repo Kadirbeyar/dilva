@@ -35,6 +35,19 @@ const nextConfig = {
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      // Illustrated avatars for the demo/seed profiles — see
+      // scripts/seedDemoUsers.ts. Not real photos of real people.
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+      },
+      // Generic placeholder photos used as demo-post images by the
+      // same seed script — never a photo of the (fictional) poster
+      // themselves, just generic stock-style filler content.
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+      },
     ],
   },
   async headers() {
