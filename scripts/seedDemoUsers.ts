@@ -214,7 +214,13 @@ async function main() {
       email: `${username}@dilva-demo.local`,
       displayName: `${first} ${last}`,
       bio: contentLang === "ar" ? pick(BIOS_AR) : pick(BIOS_KU),
-      gender: isMale ? "MALE" : "FEMALE",
+      // `as const` — without it TS widens this to plain `string`,
+      // which type-checks fine in THIS sandbox (its local Prisma
+      // client stub types everything `any`, so createMany's argument
+      // isn't actually checked here) but fails the real Vercel build
+      // against the real generated client, which types `gender` as
+      // the literal Gender enum, not `string`.
+      gender: isMale ? ("MALE" as const) : ("FEMALE" as const),
       country: place.country,
       city: place.city,
       avatarUrl,
