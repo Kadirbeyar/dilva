@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { latestBirthDateForMinAge } from "@/lib/age";
-import { onlineWhere } from "@/lib/presence";
+import { onlineWhere, computeIsOnline } from "@/lib/presence";
 import type { Gender } from "@prisma/client";
 
 export type SearchFilters = {
@@ -152,7 +152,18 @@ export async function findLanguagePartners(
       user,
       matchScore: (scoreByUser.get(user.id) === 2 ? 2 : 1) as 1 | 2,
     }))
-    .sort((a: { matchScore: number }, b: { matchScore: number }) => b.matchScore - a.matchScore);
+    .sort((a: MatchResult, b: MatchResult) => {
+      // Online-right-now always wins first, regardless of match
+      // quality — this final re-sort by matchScore was undoing the
+      // isOnline/lastSeenAt ordering the query above already applied,
+      // which is why an online user could still show up below an
+      // offline one. Match score only breaks ties within the same
+      // online/offline group.
+      const aOnline = computeIsOnline(a.user) ? 1 : 0;
+      const bOnline = computeIsOnline(b.user) ? 1 : 0;
+      if (aOnline !== bOnline) return bOnline - aOnline;
+      return b.matchScore - a.matchScore;
+    });
 }
 
 /**
