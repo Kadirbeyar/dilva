@@ -14,6 +14,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed-demo": "tsx scripts/seedDemoUsers.ts",
     "loadtest": "tsx scripts/loadtest.ts"
   },
   "prisma": {
